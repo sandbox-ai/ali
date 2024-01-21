@@ -1,0 +1,403 @@
+name: CI/CD Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+# ###############################################################################
+# # PRECONDITION frontend
+# ###############################################################################
+
+  precondition_frontend:
+    runs-on: ubuntu-latest
+
+    outputs:
+      change_frontend: ${{ steps.verify_frontend.outputs.change_frontend }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: Get changed files in the frontend folder
+        id: changed-files-frontend
+        uses: tj-actions/changed-files@v35
+        with:
+          files: frontend/**
+          
+      - name: Verify frontend change
+        id: verify_frontend
+        run: |
+          echo "change_frontend=${{ steps.changed-files-frontend.outputs.any_changed }}" >> $GITHUB_OUTPUT
+
+
+# ###############################################################################
+# # PRECONDITION backend
+# ###############################################################################
+
+  precondition_backend:
+    runs-on: ubuntu-latest
+
+    outputs:
+      change_backend: ${{ steps.verify_backend.outputs.change_backend }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: Get changed files in the docs folder
+        id: changed-files-backend
+        uses: tj-actions/changed-files@v35
+        with:
+          files: backend/**
+          
+      - name: Verify backend change
+        id: verify_backend
+        run: |
+          echo "change_backend=${{ steps.changed-files-backend.outputs.any_changed }}" >> $GITHUB_OUTPUT
+
+
+# ###############################################################################
+# # PRECONDITION nginx
+# ###############################################################################
+
+  precondition_nginx:
+    runs-on: ubuntu-latest
+
+    outputs:
+      change_nginx: ${{ steps.verify_nginx.outputs.change_nginx }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: Get changed files in the docs folder
+        id: changed-files-nginx
+        uses: tj-actions/changed-files@v35
+        with:
+          files: nginx/**
+          
+      - name: Verify nginx change
+        id: verify_nginx
+        run: |
+          echo "change_nginx=${{ steps.changed-files-nginx.outputs.any_changed }}" >> $GITHUB_OUTPUT
+
+
+# ###############################################################################
+# # BUILD frontend
+# ###############################################################################
+
+  build_frontend:
+    needs: precondition_frontend
+    runs-on: ubuntu-latest
+
+    if: needs.precondition_frontend.outputs.change_frontend == 'true'
+
+    env:
+      SERVICE: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: Extract Info
+        id: extract_info
+        run: |
+          repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+
+
+###############################################################################
+# BUILD backend
+###############################################################################
+  
+  build_backend:
+    needs: precondition_backend
+    runs-on: ubuntu-latest
+
+    if: needs.precondition_backend.outputs.change_backend == 'true'
+
+    env:
+      SERVICE: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: Extract info
+        id: extract_info
+        run: |
+          repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+
+
+###############################################################################
+# DEPLOY frontend
+###############################################################################
+
+  deploy_frontend:
+    needs: build_frontend
+    if: ${{ needs.build_frontend.result == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      DEPLOYMENT_SERVER_HOST: ${{ vars.DEV_SERVER_HOST }}
+      APP_ENDPOINT: http://${{ vars.DEV_SERVER_HOST }}
+      SERVICE: frontend
+      APP_PORT: 80
+      HOST_PORT: 8000
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract Info
+        id: extract_info
+        run: |
+          repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build development environment in frontend server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Remove old images"
+            sudo docker image prune -af --filter "until=$((15*24))h"
+            echo "Remove old images root"
+            docker image prune -af --filter "until=$((15*24))h"
+
+            export IMAGE_NAME=ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}
+            export TAG=${{ github.sha }}
+
+            mkdir -p ~/${{ env.SERVICE }}
+            cd ${{ env.SERVICE }}
+            echo COMPOSE_PROJECT_NAME=${{ env.SERVICE }} > .env
+            echo DC_IMAGE_NAME=$IMAGE_NAME >> .env
+            echo DC_IMAGE_TAG=$TAG >> .env
+            echo DC_APP_PORT=${{ env.APP_PORT }} >> .env
+            echo DC_HOST_PORT=${{ env.HOST_PORT }} >> .env
+
+            cat ./.env
+
+      - name: copy file via scp
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          source: "./docker-compose.yaml"
+          target: "${{ env.SERVICE }}/"
+
+      - name: Run Dev container
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.SERVICE }}
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username ${{ github.repository_owner }} --password-stdin
+            docker-compose down
+            docker-compose up -d
+
+
+###############################################################################
+# DEPLOY backend
+###############################################################################
+
+  deploy_backend:
+    needs: build_backend
+    if: ${{ needs.build_backend.result == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      DEPLOYMENT_SERVER_HOST: ${{ vars.DEV_SERVER_HOST }}
+      APP_ENDPOINT: http://${{ vars.DEV_SERVER_HOST }}
+      SERVICE: backend
+      APP_PORT: 5000
+      HOST_PORT: 5000
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract info
+        id: extract_info
+        run: |
+          repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build development environment in backend server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Remove old images"
+            sudo docker image prune -af --filter "until=$((15*24))h"
+            echo "Remove old images root"
+            docker image prune -af --filter "until=$((15*24))h"
+
+            export IMAGE_NAME=ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}
+            export TAG=${{ github.sha }}
+
+            mkdir -p ~/${{ env.SERVICE }}
+            cd ${{ env.SERVICE }}
+            echo COMPOSE_PROJECT_NAME=${{ env.SERVICE }} > .env
+            echo DC_IMAGE_NAME=$IMAGE_NAME >> .env
+            echo DC_IMAGE_TAG=$TAG >> .env
+            echo DC_APP_PORT=${{ env.APP_PORT }} >> .env
+            echo DC_HOST_PORT=${{ env.HOST_PORT }} >> .env
+            echo "PG_PASSWORD=${{ secrets.DEV_PG_PASSWORD}}" >> .env
+            echo PG_USER=${{ vars.DEV_PG_USER }} >> .env
+            echo PG_HOST=${{ vars.DEV_PG_HOST }} >> .env
+            echo PG_DATABASE=${{ vars.DEV_PG_DATABASE }} >> .env
+
+            cat ./.env
+
+      - name: copy file via scp
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          source: "./docker-compose.yaml"
+          target: "${{ env.SERVICE }}/"
+
+      - name: Run Dev container
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.SERVICE }}
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io --username ${{ github.repository_owner }} --password-stdin
+            docker-compose down
+            docker-compose up -d
+
+
+###############################################################################
+# DEPLOY nginx
+###############################################################################
+
+  deploy_nginx:
+    needs: precondition_nginx
+    if: needs.precondition_nginx.outputs.change_nginx == 'true'
+    runs-on: ubuntu-latest
+    env:
+      # DEPLOYMENT_SERVER_HOST: ${{ vars.DEV_SERVER_HOST }}
+      # APP_ENDPOINT: http://${{ vars.DEV_SERVER_HOST }}
+      # SERVICE: backend
+      # APP_PORT: 5000
+      # HOST_PORT: 5000
+      # GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Extract info
+        id: extract_info
+        run: |
+          repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Build development environment in backend server
+      #   uses: appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ vars.DEV_SERVER_HOST }}
+      #     username: admin
+      #     key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      #     script: |
+
+      #       mkdir -p ~/${{ env.SERVICE }}
+      #       cd ${{ env.SERVICE }}
+      #       echo COMPOSE_PROJECT_NAME=${{ env.SERVICE }} > .env
+      #       echo DC_IMAGE_NAME=$IMAGE_NAME >> .env
+      #       echo DC_IMAGE_TAG=$TAG >> .env
+      #       echo DC_APP_PORT=${{ env.APP_PORT }} >> .env
+      #       echo DC_HOST_PORT=${{ env.HOST_PORT }} >> .env
+      #       echo "PG_PASSWORD=${{ secrets.DEV_PG_PASSWORD}}" >> .env
+      #       echo PG_USER=${{ vars.DEV_PG_USER }} >> .env
+      #       echo PG_HOST=${{ vars.DEV_PG_HOST }} >> .env
+      #       echo PG_DATABASE=${{ vars.DEV_PG_DATABASE }} >> .env
+
+      #       cat ./.env
+
+      - name: copy file via scp
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          source: "./nginx/*"
+          target: "nginx/"
+
+      - name: Run Dev container
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ vars.DEV_SERVER_HOST }}
+          username: admin
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          script: |
+            cd nginx
+            docker-compose down
+            docker-compose up -d
