@@ -333,12 +333,7 @@ jobs:
     if: needs.precondition_nginx.outputs.change_nginx == 'true'
     runs-on: ubuntu-latest
     env:
-      # DEPLOYMENT_SERVER_HOST: ${{ vars.SERVER_HOST }}
-      # APP_ENDPOINT: http://${{ vars.SERVER_HOST }}
       SERVICE: nginx
-      # APP_PORT: 5000
-      # HOST_PORT: 5000
-      # GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -349,30 +344,6 @@ jobs:
           repository=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "REPOSITORY=$repository" >> $GITHUB_ENV
 
-      # - name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Build development environment in backend server
-      #   uses: appleboy/ssh-action@v0.1.10
-      #   with:
-      #     host: ${{ vars.SERVER_HOST }}
-      #     username: admin
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-
-      #       mkdir -p ~/${{ env.SERVICE }}
-      #       cd ${{ env.SERVICE }}
-      #       echo COMPOSE_PROJECT_NAME=${{ env.SERVICE }} > .env
-      #       echo DC_IMAGE_NAME=$IMAGE_NAME >> .env
-      #       echo DC_IMAGE_TAG=$TAG >> .env
-      #       echo DC_APP_PORT=${{ env.APP_PORT }} >> .env
-      #       echo DC_HOST_PORT=${{ env.HOST_PORT }} >> .env
-
-      #       cat ./.env
 
       - name: copy file via scp
         uses: appleboy/scp-action@v0.1.4
@@ -381,7 +352,7 @@ jobs:
           username: admin
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./nginx/*"
-          target: "nginx/"
+          target: "."
 
       - name: Run Dev container
         uses: appleboy/ssh-action@v0.1.10
