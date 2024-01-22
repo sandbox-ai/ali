@@ -339,7 +339,7 @@ jobs:
     env:
       # DEPLOYMENT_SERVER_HOST: ${{ vars.DEV_SERVER_HOST }}
       # APP_ENDPOINT: http://${{ vars.DEV_SERVER_HOST }}
-      # SERVICE: backend
+      SERVICE: nginx
       # APP_PORT: 5000
       # HOST_PORT: 5000
       # GITHUB_TOKEN: ${{ github.token }}
