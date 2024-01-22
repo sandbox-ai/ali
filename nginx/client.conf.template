@@ -1,0 +1,2 @@
+# increase client_max_body_size
+client_max_body_size 100M;
