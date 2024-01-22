@@ -1,0 +1,129 @@
+<nb-layout>
+
+  <nb-layout-column>
+
+    <div class="row" *ngIf="question">
+
+      <div class="col-md-10 offset-md-1">
+
+        <nb-card>
+          <nb-card-body>
+            <div style="text-align: center; margin-top: 100px; margin-bottom: 75px;">
+
+              <div style="text-align: center;">
+                <img src="assets/arg_flag_128px.jpg" alt="Bandera Argentina" style="width: 100px; margin-bottom: 20px;">
+                <h1 class="project">LA LEY DE MILEI</h1>
+                <p class="titulo">Descubre con claridad las propuestas legislativas del Presidente Javier Milei.</p>
+                <div style="width:100%; display: flex; justify-content: center;">
+                  <div class="sep"></div>
+                </div>
+                <div style="width:100%; display: flex; justify-content: center;">
+                  <p class="desc">Nuestro avanzado sistema de IA analiza y desglosa cada nueva ley enviada al Congreso, ofreciéndote respuestas precisas y comprensibles a tus interrogantes. Simplemente escribí tu pregunta en la casilla y obtené una explicación detallada al instante.</p>
+                </div>
+              </div>
+
+            </div>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-10 offset-md-1">
+      <!-- <div class="card-col-100"> -->
+        <nb-card>
+          <nb-card-body style="border-bottom: 1px solid #cccccc;">
+            <input type="text" nbInput placeholder="Ingrese su pregunta" class="question" [(ngModel)]="userInput" (keyup.enter)="onEnter()" [disabled]="!question">
+          </nb-card-body>
+          <nb-card-footer style="text-align: center;" *ngIf="question">
+            <nb-checkbox status="info" [(ngModel)]="inputCheckbox" style="width: 100%;"><span id='highlight-terms'>Acepto los <span id='open-terms' (click)="openDialog(dialogTerms)">Términos y Condiciones</span></span></nb-checkbox>
+          </nb-card-footer>
+        </nb-card>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!question">
+      <!-- <div class="card-col-100"> -->
+      <div class="col-md-10 offset-md-1">
+
+        <!-- Spinner -->
+        <div class="no-freeze-spinner" *ngIf="loading">
+          <div id="no-freeze-spinner">
+            <div>
+              <i class="material-icons">account_circle</i>
+              <i class="material-icons">cottage</i>
+              <i class="material-icons">apartment</i>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <nb-card *ngIf="!loading">
+          <nb-card-body>
+            <div style="width: min(970px, 90%); margin: 0 auto;">
+              <ngx-typed-js [strings]="response" (completed)="handleComplete()" [showCursor]="false" [typeSpeed]="0">
+                <p class="typing"></p>
+              </ngx-typed-js>
+            </div>
+          </nb-card-body>
+          <nb-card-footer *ngIf="refer">
+            <h3 id="referencias-text">Referencias</h3>
+            <div style="width: min(970px, 90%); margin: 0 auto;">
+              <div *ngFor="let reference of displayReferences;" class="fade-in-element">
+                <p class="reference">{{ reference }}</p>
+              </div>
+            </div>
+          </nb-card-footer>
+        </nb-card>
+
+      </div>
+    </div>
+
+  </nb-layout-column>
+
+  <nb-layout-footer fixed>
+
+    <div class="logo">
+      <a href="https://sandbox-ai.github.io/" target="_blank" style="display: flex; text-decoration: none;">
+          <img id="sandbox-circle" src="assets/sandbox-circle.png" height="50" alt="">
+          <div id="sandbox-text">Sandbox<span style="color: #50C0FF">AI</span></div>
+      </a>
+    </div>
+
+  <div class="new-question" *ngIf="!question" (click)="newQuestion()">
+    <div id="new-question-text">Nueva pregunta</div>
+    <div id="new-question-button">
+      <nb-icon id="new-question-icon" icon="edit-2"></nb-icon>
+    </div>
+  </div>
+
+    <div class="socials">
+      <div style="width: 100%; text-align: right;">
+        <a class="social-icon" href="mailto:sandboxai@protonmail.com" target="_blank">
+          <img src="assets/mail_64px.png" height="36" alt="Mail">
+        </a>
+        <a class="social-icon" href="https://github.com/sandbox-ai" target="_blank"><img src="assets/github_64px.png" height="36" alt="GitHub"></a>
+        <a class="social-icon" href="https://www.twitter.com/" target="_blank" ><img src="assets/x_64px.png" height="36" alt="X"></a>
+      </div>
+    </div>
+
+  </nb-layout-footer>
+
+</nb-layout>
+
+
+<ng-template #dialogTerms let-data let-ref="dialogRef">
+  <nb-card class="terms">
+    <nb-card-header>Términos y Condiciones</nb-card-header>
+    <nb-card-body id="terms-body" style="margin-bottom: 30px;">
+      El usuario debe utilizar la información proporcionada por la web bajo su propio riesgo y discreción.<br>
+      La web no se responsabiliza por las acciones tomadas basadas en la información proporcionada.<br>
+      La web se reserva el derecho de modificar o descontinuar cualquier aspecto del servicio en cualquier momento.<br>
+      El uso de la web no establece una relación cliente-abogado.<br>
+      La web puede contener enlaces a sitios web de terceros, sobre los cuales no tiene control y por los cuales no asume responsabilidad.<br>
+      El usuario no debe utilizar la información proporcionada por la web para propósitos ilegales o no éticos.<br>
+      El usuario acuerda eximir de responsabilidad a la web y a sus creadores ante cualquier reclamo derivado de su uso del servicio.<br>
+      Al utilizar la web, el usuario consiente el uso y análisis de sus datos para mejorar el servicio y personalizar la experiencia del usuario.<br>
+    </nb-card-body>
+  </nb-card>
+</ng-template>

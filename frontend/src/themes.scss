@@ -1,0 +1,20 @@
+@forward '@nebular/theme/styles/theming';
+@use '@nebular/theme/styles/theming' as *;
+@use '@nebular/theme/styles/themes/default';
+
+$nb-themes: nb-register-theme((
+  card-padding: 1rem 0,
+  footer-background-color: #F5F5F5,
+  footer-shadow: 0 -0.5rem 3rem 0 #F5F5F5,
+  footer-divider-width: 0,
+
+  input-basic-placeholder-text-color: #cccccc,
+
+  checkbox-success-checked-background-color: rgba(0, 214, 143, 0.24),
+  checkbox-success-border-color: #a8a8a8,
+  checkbox-success-background-color: #EEEEEE,
+  checkbox-success-active-checked-background-color: rgba(0, 214, 143, 0.24),
+  checkbox-success-active-background-color: rgba(0, 214, 143, 0.24),
+  checkbox-success-hover-checked-background-color: rgba(0, 214, 143, 0.24),
+  checkbox-success-focus-checked-background-color: rgba(0, 214, 143, 0.24),
+), default, default);
