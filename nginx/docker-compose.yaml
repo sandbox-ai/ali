@@ -8,5 +8,3 @@ services:
       - ./:/etc/nginx/templates 
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
-# Trigger
