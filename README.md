@@ -4,4 +4,4 @@
                         |___/\__/_||_||_|\__/_||____/\___//_\_\ (_) |_|_||___|          
 
 
-## RAG your way through Argentina's legal information
+## RAG your way through Argentina's legal documents
