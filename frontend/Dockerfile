@@ -18,5 +18,3 @@ COPY --from=build-stage /app/dist/qafront/ /usr/share/nginx/html
 
 # Copy nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Trigger
