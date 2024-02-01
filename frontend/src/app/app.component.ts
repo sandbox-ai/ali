@@ -2,6 +2,8 @@ import { Component, TemplateRef, ViewChild, ElementRef, AfterViewChecked } from 
 import { NbDialogService } from '@nebular/theme';
 import { TermDialogComponent } from './components/term-dialog.component';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../environments/environment';
+
 
 @Component({
   selector: 'app-root',
@@ -36,9 +38,12 @@ export class AppComponent {
       } else {
         this.question = false;
 
-        const url = 'http://127.0.0.1:5000/question';
+        const url = environment.url;
+        const url_question = url + "/question";
+        console.log("URL", url_question);
+
         this.httpClient
-          .post(url, {'question': this.userInput})
+          .post(url_question, {'question': this.userInput})
           .subscribe({
             next: this.responseBot,
             error: err => console.error('Ops: ', err.message),
