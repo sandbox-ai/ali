@@ -299,6 +299,7 @@ jobs:
             echo DC_IMAGE_TAG=$TAG >> .env
             echo DC_APP_PORT=${{ env.APP_PORT }} >> .env
             echo DC_HOST_PORT=${{ env.HOST_PORT }} >> .env
+            echo OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} >> .env
 
             cat ./.env
 
