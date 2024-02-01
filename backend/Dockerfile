@@ -14,7 +14,5 @@ COPY . .
 EXPOSE 5000
 
 # default command
-CMD ["python", "api.py"]
+CMD ["python", "api.py", "-e", "prod"]
 # CMD ["tail", "-f", "/dev/null"]
-
-# Trigger
