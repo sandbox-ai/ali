@@ -16,6 +16,18 @@ if __name__ == "__main__":
     # Path to session configuration file:
     config_filepath = r"./config.json"
 
+    if os.path.exists(config_filepath):
+        with open(config_filepath, 'r', encoding='utf-8') as file:
+            config = json.load(file)
+    else:
+        logging.error(f"[ ERROR ] Configuration file not found at '{config_filepath}'.")
+        exit()
+
+    logging_dir = "./logs/"
+    bot_name = "ALI"
+    session_name = "LaLeyDeMilei"
+
+    logging_filepath = logger.create_log_file(bot_name, config, os.path.join(logging_dir, session_name))
 
     try:
 

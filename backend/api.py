@@ -83,7 +83,6 @@ def create_application():
 ################################################
 # Heartbeat
 ################################################
-@home.route("/api/heartbeat", methods=["GET"])
 @home.route("/heartbeat", methods=["GET"])
 def r_heartbeat():
     return jsonify({"heartbeat": "OK"})
@@ -92,7 +91,6 @@ def r_heartbeat():
 ################################################
 # Question
 ################################################
-@home.route("/api/question", methods=["POST"])
 @home.route("/question", methods=["POST"])
 def r_question():
     json_result = request.get_json()
