@@ -10,6 +10,8 @@ from openai import OpenAI
 import time
 import logging
 import uuid
+from src.utils import *
+import copy
 
 """
 system will fail if: 
@@ -312,6 +314,7 @@ class QueryEngine:
 
         return top_k_docs, matching_docs
 
+    @timeit
     def generate_llm_response(
         self,
         query: str,
@@ -338,6 +341,7 @@ class QueryEngine:
             None. Prints the response directly if streaming is True, otherwise returns the response.
         """
         if top_k_docs is None or matching_docs is None:
+            print("No top_k_docs or matching_docs provided. Computing them now.")
             top_k_docs, matching_docs = self.query_similarity(query)
 
         # Preprocess the context from matching_docs
@@ -382,6 +386,7 @@ class QueryEngine:
                 if chunk.choices[0].delta.content is not None:
                     print(chunk.choices[0].delta.content, end="")
 
+    @timeit
     def generate_metadata_from_key(self, key: str) -> dict:
         """
         Extracts metadata from a given key string. The metadata includes 'documento',
@@ -438,6 +443,7 @@ class QueryEngine:
         return metadata
 
 
+    @timeit
     def generate_complete_citations_dict(self, matching_docs: Dict[str, str], top_k_docs: Dict[str, float]) -> Dict[str, Dict]:
         """
         Generates a dictionary of dictionaries, each containing text, score, and metadata extracted from the keys of matching_docs and the scores from top_k_docs. Each entry is uniquely identified by a randomly generated UUID.
@@ -464,10 +470,70 @@ class QueryEngine:
             }
 
         return complete_dicts
+    
+    # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
+def generate_metadata_from_key(key: str) -> dict:
+    """
+    Extracts metadata from a given key string. The metadata includes 'documento',
+    'titulo', 'capitulo', and 'articulo', derived from the structure of the key.
 
+    Parameters:
+    - key (str): The key string from which to extract metadata. It is expected to
+    contain sections separated by periods and specific markers like "Titulo",
+    "Capitulo", and "Articulo".
+
+    Returns:
+    - dict: A dictionary containing the extracted metadata. The dictionary has the
+    following keys: 'documento', 'titulo', 'capitulo', 'articulo', 'start_idx',
+    and 'end_idx'. The 'start_idx' and 'end_idx' are included for compatibility
+    but are set to 0 as they are ignored in this context.
+    """
+    # Initialize metadata dictionary with default values
+    metadata = {
+        'documento': '',
+        'titulo': '',
+        'capitulo': '',
+        'articulo': '',
+        'start_idx': 0,  
+        'end_idx': 0     
+    }
+        
+    # Extract 'documento' from the beginning until the first period
+    documento_end_idx = key.find(".")
+    if documento_end_idx != -1:
+        metadata['documento'] = key[:documento_end_idx]
+        
+    # Find indices for 'titulo', 'capitulo', and 'articulo'
+    titulo_start_idx = key.find("Titulo")
+    capitulo_start_idx = key.find("Capitulo")
+    articulo_start_idx = key.find("Articulo")
+        
+    # Determine the end index for 'titulo' based on the presence of 'capitulo' or 'articulo'
+    titulo_end_idx = min(
+        [idx for idx in [capitulo_start_idx, articulo_start_idx, len(key)] if idx != -1]
+    )
+        
+    if titulo_start_idx != -1 and titulo_end_idx != -1:
+        metadata['titulo'] = key[titulo_start_idx:titulo_end_idx].strip(" .")
+        
+    # Extract 'capitulo' if present
+    if capitulo_start_idx != -1:
+        capitulo_end_idx = articulo_start_idx if articulo_start_idx != -1 else len(key)
+        metadata['capitulo'] = key[capitulo_start_idx:capitulo_end_idx].strip(" .")
+        
+    # Extract 'articulo'
+    if articulo_start_idx != -1:
+        metadata['articulo'] = key[articulo_start_idx:]
+        
+    return metadata
 
 
 if __name__ == "__main__":
+    """   
+    ========================================
+    ||            example run             ||
+    ========================================   
+    """
 
     file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
     file_path_dnu_unpreppended = (
@@ -505,13 +571,97 @@ if __name__ == "__main__":
     text = query_engine.generate_llm_response(
         query="que va a pasar con los impuestos de autos",
         client=OpenAI(),
-        model_name="gpt-4-0125-preview",
+        model_name= 'gpt-3.5-turbo-0125', #'gpt-4-1106-preview'# <-- ~15s, #'gpt-4' # <--- ~8s, #"gpt-4-0125-preview",# <--- slow AF, ~27s
         temperature=0,
-        max_tokens=2000,
+        max_tokens=1000, # 2000
         streaming=False,
         top_k_docs=top_k_docs,
         matching_docs=matching_docs,
     )
 
+    print(text)
+
     citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
 
+    print(citations)
+
+    """   
+    ========================================
+    ||          END example run           ||
+    ========================================   
+    """
+
+
+    """   
+    ========================================
+    ||       generate citations data      ||
+    ========================================   
+    """
+    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
+    data_loader = DataLoader()
+    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
+    dnu_unpreppended = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json")
+
+    # generate citations
+    def generate_citation_data(legal_doc) -> Dict[str, Dict[str, Dict]]:
+        """
+        UPDATE DOCSTRING
+        Generates a dictionary of dictionaries, each containing text, score, and metadata extracted from the keys of matching_docs and the scores from top_k_docs. Each entry is uniquely identified by a randomly generated UUID.
+
+        Parameters:
+        - matching_docs (Dict[str, str]): A dictionary where keys are document identifiers and values are the text of the documents.
+        - top_k_docs (Dict[str, float]): A dictionary where keys are document identifiers and values are the scores of the documents.
+
+        Returns:
+        - Dict[str, Dict]: A dictionary where each key is a UUID string and each value is a dictionary containing 'text', 'score', 'metadata', 'start_char_idx', and 'end_char_idx'.
+        """
+
+        dnu_metadata = {
+            key: {
+                str(uuid.uuid4()): {
+                    'text': value,
+                    'score': 0, 
+                    'metadata': generate_metadata_from_key(key),
+                    'start_char_idx': None,
+                    'end_char_idx': None, 
+                }
+            } for key, value in dnu.items()
+        }
+
+        return dnu_metadata
+
+
+    dnu_metadata = generate_citation_data(dnu)
+    dnu_metadata
+
+    with open('./data/dnu_metadata.json', 'w') as f:
+        json.dump(dnu_metadata, f)
+
+    with open('./data/dnu_metadata.json', 'r') as f:
+        dnu_metadata = json.load(f)
+
+
+
+
+    def get_cached_citations(with_score: bool = True)
+
+
+    
+
+
+    import copy
+    # Initialize citations as an empty dict
+    citations = {}
+    # Iterate over top_k_docs to filter, flatten, and update scores
+    for key in top_k_docs:
+        if key in dnu_metadata:
+            for sub_key, sub_value in dnu_metadata[key].items():
+                # Deep copy the sub_value to ensure original data is not modified
+                citations[sub_key] = copy.deepcopy(sub_value)
+                # Update the score for the flattened entry
+                citations[sub_key]['score'] = top_k_docs[key]
+    
+
+
+    head_dict(citations, 2)
+    head_dict(dnu_metadata, 2)
