@@ -248,7 +248,7 @@ class QueryEngine:
         self.vectorstore = vectorstore
         self.embedder = embedder
         self.legal_docs = legal_docs
-        self.legal_metadata= legal_metadata
+        #self.legal_metadata= legal_metadata
         self.top_k = top_k
         # Precompute norms of vectors to speed up vector search
         self.vector_norms = {
@@ -321,7 +321,7 @@ class QueryEngine:
         self,
         query: str,
         client,
-        model_name: str = "gpt-4-0125-preview",
+        model_name: str = 'gpt-3.5-turbo-0125',#"gpt-4-0125-preview",
         temperature: float = 0,
         max_tokens: int = 2000,
         streaming: bool = True,
@@ -474,19 +474,6 @@ class QueryEngine:
         return complete_dicts
     
 
-    @timeit
-    def get_stored_citations(self, top_k_docs, legal_metadata):
-    # Initialize citations as an empty dict
-        citations = {}
-        # Iterate over top_k_docs to filter, flatten, and update scores
-        for key in top_k_docs:
-            if key in dnu_metadata:
-                for sub_key, sub_value in dnu_metadata[key].items():
-                    # Deep copy the sub_value to ensure original data is not modified
-                    citations[sub_key] = copy.deepcopy(sub_value)
-                    # Update the score for the flattened entry
-                    citations[sub_key]['score'] = top_k_docs[key]
-        return citations
     
     # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
 def generate_metadata_from_key(key: str) -> dict:
@@ -544,6 +531,19 @@ def generate_metadata_from_key(key: str) -> dict:
         
     return metadata
 
+@timeit
+def get_stored_citations(top_k_docs, legal_metadata):
+# Initialize citations as an empty dict
+    citations = {}
+    # Iterate over top_k_docs to filter, flatten, and update scores
+    for key in top_k_docs:
+        if key in legal_metadata:
+            for sub_key, sub_value in legal_metadata[key].items():
+                # Deep copy the sub_value to ensure original data is not modified
+                citations[sub_key] = copy.deepcopy(sub_value)
+                # Update the score for the flattened entry
+                citations[sub_key]['score'] = top_k_docs[key]
+    return citations
 
 if __name__ == "__main__":
     """   
@@ -603,7 +603,8 @@ if __name__ == "__main__":
     print(text)
 
     #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    citations = get_stored_citations(top_k_docs, dnu_metadata)
 
     print(citations)
 
@@ -667,7 +668,8 @@ if __name__ == "__main__":
     query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
     
-    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    citations = get_stored_citations(top_k_docs, dnu_metadata)
     print(citations)
 
     head_dict(citations, 2)

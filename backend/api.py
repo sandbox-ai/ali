@@ -141,14 +141,15 @@ def r_question():
         model_name='gpt-3.5-turbo-0125', 
         temperature=0,
         max_tokens=2000,
-        streaming=False,
+        streaming=True, #False,
         top_k_docs=top_k_docs,
         matching_docs=matching_docs,
     )
 
 
     #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    citations = get_stored_citations(top_k_docs, dnu_metadata)
 
 
 
