@@ -113,6 +113,8 @@ def r_question():
     dnu_unpreppended = data_loader.load_json(
         "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
     )
+    
+    dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
 
     embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
 
@@ -124,7 +126,7 @@ def r_question():
 
 
     # Initialize the QueryEngine with necessary parameters
-    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, top_k=5)
+    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
     # Use the query_similarity method to find documents similar to the query
     top_k_docs, matching_docs = query_engine.query_similarity(
@@ -135,7 +137,7 @@ def r_question():
     text = query_engine.generate_llm_response(
         query=user_query, 
         client=OpenAI(),
-        model_name="gpt-4-0125-preview",
+        model_name='gpt-3.5-turbo-0125', 
         temperature=0,
         max_tokens=2000,
         streaming=False,
@@ -143,7 +145,11 @@ def r_question():
         matching_docs=matching_docs,
     )
 
-    citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    with open('./data/dnu_metadata.json', 'r') as f:
+        dnu_metadata = json.load(f)
+
+    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
 
 
 

@@ -46,7 +46,7 @@ def timeit(method):
 
 class DataLoader:
     @staticmethod
-    def load_json(filepath: str) -> Dict:
+    def load_json(filepath: str) -> dict:
         with open(filepath, "r") as file:
             return json.load(file)
 
@@ -242,11 +242,13 @@ class QueryEngine:
         vectorstore: Dict[str, np.ndarray],
         embedder: SentenceTransformer,
         legal_docs: Dict[str, str],
+        legal_metadata, # complete type hint
         top_k: Optional[int] = 5,
     ):
         self.vectorstore = vectorstore
         self.embedder = embedder
         self.legal_docs = legal_docs
+        self.legal_metadata= legal_metadata
         self.top_k = top_k
         # Precompute norms of vectors to speed up vector search
         self.vector_norms = {
@@ -471,6 +473,21 @@ class QueryEngine:
 
         return complete_dicts
     
+
+    @timeit
+    def get_stored_citations(self, top_k_docs, legal_metadata):
+    # Initialize citations as an empty dict
+        citations = {}
+        # Iterate over top_k_docs to filter, flatten, and update scores
+        for key in top_k_docs:
+            if key in dnu_metadata:
+                for sub_key, sub_value in dnu_metadata[key].items():
+                    # Deep copy the sub_value to ensure original data is not modified
+                    citations[sub_key] = copy.deepcopy(sub_value)
+                    # Update the score for the flattened entry
+                    citations[sub_key]['score'] = top_k_docs[key]
+        return citations
+    
     # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
 def generate_metadata_from_key(key: str) -> dict:
     """
@@ -549,6 +566,10 @@ if __name__ == "__main__":
         "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
     )
 
+    dnu_metadata = data_loader.load_json('./data/dnu_metadata.json')
+    with open('./data/dnu_metadata.json', 'r') as f:
+        dnu_metadata = json.load(f)
+
     embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
 
     if not os.path.exists(file_path_vectorstore):
@@ -560,7 +581,7 @@ if __name__ == "__main__":
     query_vector = embedder.embed_text(query)
 
     # Initialize the QueryEngine with necessary parameters
-    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, top_k=5)
+    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
     # Use the query_similarity method to find documents similar to the query
     top_k_docs, matching_docs = query_engine.query_similarity(
@@ -573,7 +594,7 @@ if __name__ == "__main__":
         client=OpenAI(),
         model_name= 'gpt-3.5-turbo-0125', #'gpt-4-1106-preview'# <-- ~15s, #'gpt-4' # <--- ~8s, #"gpt-4-0125-preview",# <--- slow AF, ~27s
         temperature=0,
-        max_tokens=1000, # 2000
+        max_tokens=2000, # 1000
         streaming=False,
         top_k_docs=top_k_docs,
         matching_docs=matching_docs,
@@ -581,7 +602,8 @@ if __name__ == "__main__":
 
     print(text)
 
-    citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
 
     print(citations)
 
@@ -643,25 +665,77 @@ if __name__ == "__main__":
 
 
 
-    def get_cached_citations(with_score: bool = True)
-
-
     
-
-
-    import copy
-    # Initialize citations as an empty dict
-    citations = {}
-    # Iterate over top_k_docs to filter, flatten, and update scores
-    for key in top_k_docs:
-        if key in dnu_metadata:
-            for sub_key, sub_value in dnu_metadata[key].items():
-                # Deep copy the sub_value to ensure original data is not modified
-                citations[sub_key] = copy.deepcopy(sub_value)
-                # Update the score for the flattened entry
-                citations[sub_key]['score'] = top_k_docs[key]
-    
-
+    citations = get_stored_citations(top_k_docs, dnu_metadata)
+    print(citations)
 
     head_dict(citations, 2)
     head_dict(dnu_metadata, 2)
+
+
+
+    def compare_nested_contents_detailed(citations, citations2):
+        def find_matching_entry(unique_attributes, target_dict):
+            """
+            Finds an entry in the target_dict that matches the unique_attributes.
+            unique_attributes is a dictionary containing attributes to match.
+
+            Parameters:
+            - unique_attributes (dict): Attributes used for matching entries.
+            - target_dict (dict): The dictionary to search for a matching entry.
+
+            Returns:
+            - tuple: A tuple containing the key and value of the matching entry, or (None, None) if no match is found.
+            """            
+
+            for key, value in target_dict.items():
+                if all(value['metadata'][attr] == unique_attributes[attr] for attr in unique_attributes):
+                    return key, value
+            return None, None
+
+        are_all_equal = True
+
+        for id1, content1 in citations.items():
+            # Construct a unique identifier based on known unique attributes
+            unique_attributes = {attr: content1['metadata'][attr] for attr in ['documento', 'titulo', 'capitulo', 'articulo']}
+        
+            # Find the matching entry in citations2
+            matching_id, matching_entry = find_matching_entry(unique_attributes, citations2)
+        
+            if matching_entry:
+                # Assume equality until proven otherwise
+                current_entry_equal = True
+                # Explicitly iterate over sub-keys for detailed comparison
+                for sub_key in content1:
+                    if sub_key in matching_entry:
+                        if content1[sub_key] == matching_entry[sub_key]:
+                            print(f"  Sub-key {sub_key} in {id1} and {matching_id}: Equal")
+                        else:
+                            print(f"  Sub-key {sub_key} in {id1} and {matching_id}: Not equal")
+                            current_entry_equal = False
+                            # Further detailed comparison for sub-sub-keys
+                            for sub_sub_key in content1[sub_key]:
+                                if sub_sub_key in matching_entry[sub_key]:
+                                    if content1[sub_key][sub_sub_key] == matching_entry[sub_key][sub_sub_key]:
+                                        print(f"    Sub-sub-key {sub_sub_key} in {id1} and {matching_id}: Equal")
+                                    else:
+                                        print(f"    Sub-sub-key {sub_sub_key} in {id1} and {matching_id}: Not equal")
+                                else:
+                                    print(f"    Sub-sub-key {sub_sub_key} not found in {matching_id}")
+                    else:
+                        print(f"  Sub-key {sub_key} not found in {matching_id}")
+                        current_entry_equal = False
+            
+                if current_entry_equal:
+                    print(f"Matching content for {id1} and {matching_id} is equal in all aspects.")
+                else:
+                    are_all_equal = False
+            else:
+                print(f"No matching content found for {id1}.")
+                are_all_equal = False
+
+        print(f"Are all matching entries equal? {are_all_equal}")
+
+
+    # compare that the live-generated citations equal the stored ones
+    compare_nested_contents_detailed(citations, citations2)
