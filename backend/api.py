@@ -1,7 +1,7 @@
 # application.py
 # -*- encoding: utf-8 -*-
 
-from src.rag_session import RAGSession
+from src.rag_session import *
 import src.custom_logging as logger
 import logging
 
@@ -25,13 +25,14 @@ logging.basicConfig(level=logging.INFO)
 config_filepath = r"./config.json"
 
 # Set up RAG session:
-session = RAGSession(config_filepath)
+#session = RAGSession(config_filepath)
 
 home = Blueprint('home_views', __name__)
 
 try:
     # Set up session:
-    session.set_up()
+    #session.set_up()
+    hello = "hello"
 
 except Exception as e:
     # Extract error info:
@@ -50,7 +51,7 @@ except Exception as e:
         
         Error: {e}""")
 
-    logger.save_string(error_message, session.logging_filepath)
+    #logger.save_string(error_message, session.logging_filepath)
     raise
 
 
@@ -83,7 +84,6 @@ def create_application():
 ################################################
 # Heartbeat
 ################################################
-@home.route("/api/heartbeat", methods=["GET"])
 @home.route("/heartbeat", methods=["GET"])
 def r_heartbeat():
     return jsonify({"heartbeat": "OK"})
@@ -92,7 +92,6 @@ def r_heartbeat():
 ################################################
 # Question
 ################################################
-@home.route("/api/question", methods=["POST"])
 @home.route("/question", methods=["POST"])
 def r_question():
     json_result = request.get_json()
@@ -101,8 +100,58 @@ def r_question():
     logging.info(f"Param received")
     logging.info(f"Question : {user_query}")
 
+
+    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
+    file_path_dnu_unpreppended = (
+        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+    )
+    file_path_vectorstore = "./data/dnu_vectorstore.json"
+
+
+    data_loader = DataLoader()
+    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
+    dnu_unpreppended = data_loader.load_json(
+        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+    )
+    
+    dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
+
+    # WILL THIS LOAD EVERYTIME someone asks a question?
+    embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
+
+    if not os.path.exists(file_path_vectorstore):
+        vectorstore = embedder.embed_text(dnu)
+        VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
+    else:
+        vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
+
+
+    # Initialize the QueryEngine with necessary parameters
+    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
+
+    # Use the query_similarity method to find documents similar to the query
+    top_k_docs, matching_docs = query_engine.query_similarity(
+        query=user_query
+    )
+
     # Respond user query:
-    text, citations = session.generate(user_query)
+    text = query_engine.generate_llm_response(
+        query=user_query, 
+        client=OpenAI(),
+        model_name='gpt-3.5-turbo-0125', 
+        temperature=0,
+        max_tokens=2000,
+        streaming=True, #False,
+        top_k_docs=top_k_docs,
+        matching_docs=matching_docs,
+    )
+
+
+    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
+    citations = get_stored_citations(top_k_docs, dnu_metadata)
+
+
 
     logging.info(f"Response Answer: {text}")
     sources = []
