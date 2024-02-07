@@ -664,9 +664,10 @@ if __name__ == "__main__":
 
 
 
+    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
     
-    citations = get_stored_citations(top_k_docs, dnu_metadata)
+    citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
     print(citations)
 
     head_dict(citations, 2)

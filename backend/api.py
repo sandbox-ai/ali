@@ -116,6 +116,7 @@ def r_question():
     
     dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
 
+    # WILL THIS LOAD EVERYTIME someone asks a question?
     embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
 
     if not os.path.exists(file_path_vectorstore):
@@ -145,8 +146,6 @@ def r_question():
         matching_docs=matching_docs,
     )
 
-    with open('./data/dnu_metadata.json', 'r') as f:
-        dnu_metadata = json.load(f)
 
     #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
     citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
