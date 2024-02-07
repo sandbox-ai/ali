@@ -72,8 +72,8 @@ if __name__ == "__main__":
             client=OpenAI(),
             model_name="gpt-4-0125-preview",
             temperature=0,
-            max_tokens=2000,
-            streaming=False,
+            max_tokens=1000, #2000,
+            streaming=False, #True
             top_k_docs=top_k_docs,
             matching_docs=matching_docs,
         )
