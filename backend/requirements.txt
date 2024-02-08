@@ -8,3 +8,4 @@ transformers
 torch
 python-dotenv
 sentence-transformers
+plotly
