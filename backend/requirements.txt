@@ -9,3 +9,4 @@ torch
 python-dotenv
 sentence-transformers
 plotly
+scikit-learn
