@@ -1,9 +1,11 @@
-pinecone-client
 typing
 openai
-llama-index
 flask
 flask-cors
 transformers
 torch
 python-dotenv
+sentence-transformers
+plotly
+scikit-learn
+rich
