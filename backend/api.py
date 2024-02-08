@@ -125,7 +125,7 @@ def r_heartbeat():
 ################################################
 # Question
 ################################################
-@home.route("/question", methods=["POST"])
+@home.route("/api/question", methods=["POST"])
 def r_question(embedder = embedder, query_engine = query_engine):
     json_result = request.get_json()
     user_query = json_result.get("question", "")
@@ -179,8 +179,9 @@ def r_question(embedder = embedder, query_engine = query_engine):
 
     return jsonify(answer=text, sources=sources, error="OK")
 
-    # WITH STREAMING
 
+
+    # WITH STREAMING
 
     #def generate_stream():
         #for chunk in query_engine.generate_llm_response2(
