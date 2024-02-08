@@ -1,7 +1,5 @@
-pinecone-client
 typing
 openai
-llama-index
 flask
 flask-cors
 transformers
