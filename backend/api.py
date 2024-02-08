@@ -8,6 +8,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 from flask import Blueprint, request, jsonify
+from flask import Response
 
 import sys
 import argparse
@@ -54,6 +55,38 @@ except Exception as e:
     #logger.save_string(error_message, session.logging_filepath)
     raise
 
+file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
+file_path_dnu_unpreppended = (
+    "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+)
+file_path_vectorstore = "./data/dnu_vectorstore.json"
+
+
+data_loader = DataLoader()
+dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
+dnu_unpreppended = data_loader.load_json(
+    "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+)
+    
+dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
+
+# WILL THIS LOAD EVERYTIME someone asks a question?
+#embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
+
+if not os.path.exists(file_path_vectorstore):
+    vectorstore = embedder.embed_text(dnu)
+    VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
+else:
+    vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
+
+embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
+
+# Initialize the QueryEngine with necessary parameters
+query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
+
+
+
+
 
 def flaskServer(ip='127.0.0.1', port=5000):
     app = create_application()
@@ -93,7 +126,7 @@ def r_heartbeat():
 # Question
 ################################################
 @home.route("/question", methods=["POST"])
-def r_question():
+def r_question(embedder = embedder, query_engine = query_engine):
     json_result = request.get_json()
     user_query = json_result.get("question", "")
 
@@ -101,59 +134,38 @@ def r_question():
     logging.info(f"Question : {user_query}")
 
 
-    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-    file_path_dnu_unpreppended = (
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
-    file_path_vectorstore = "./data/dnu_vectorstore.json"
-
-
-    data_loader = DataLoader()
-    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-    dnu_unpreppended = data_loader.load_json(
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
-    
-    dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
-
-    # WILL THIS LOAD EVERYTIME someone asks a question?
-    embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
-
-    if not os.path.exists(file_path_vectorstore):
-        vectorstore = embedder.embed_text(dnu)
-        VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
-    else:
-        vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
-
-
-    # Initialize the QueryEngine with necessary parameters
-    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
-
     # Use the query_similarity method to find documents similar to the query
     top_k_docs, matching_docs = query_engine.query_similarity(
         query=user_query
     )
 
-    # Respond user query:
+
+
+    #WITHOUT STREAMING
+    
+    #Respond user query:
     text = query_engine.generate_llm_response(
         query=user_query, 
         client=OpenAI(),
         model_name='gpt-3.5-turbo-0125', 
         temperature=0,
         max_tokens=2000,
-        streaming=True, #False,
+        streaming=False, #True, #False,
         top_k_docs=top_k_docs,
         matching_docs=matching_docs,
     )
 
-
-    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
     citations = get_stored_citations(top_k_docs, dnu_metadata)
 
 
+    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
 
-    logging.info(f"Response Answer: {text}")
+
+
+
+    #logging.info(f"Response Answer: {text}")
+
     sources = []
     for citation in citations.values():
         metadata = citation['metadata']
@@ -166,6 +178,30 @@ def r_question():
         logging.info(source)
 
     return jsonify(answer=text, sources=sources, error="OK")
+
+    # WITH STREAMING
+
+
+    #def generate_stream():
+        #for chunk in query_engine.generate_llm_response2(
+            #query=user_query, 
+            #client=OpenAI(),
+            #model_name='gpt-3.5-turbo-0125', 
+            #temperature=0,
+            #max_tokens=2000,
+            #streaming=True,
+            #top_k_docs=top_k_docs,
+            #matching_docs=matching_docs,
+        #):
+            ## Assuming each chunk is a string that needs to be JSON-formatted
+            ##yield json.dumps({"text": chunk}) + "\n"  # NDJSON format
+            ## test
+            #yield chunk
+
+    ### Return a streaming response with NDJSON content type
+    #return Response(generate_stream(), content_type='application/x-ndjson')
+    #return Response(generate_stream(), content_type='application/json')
+
 
 
 if __name__ == '__main__':
