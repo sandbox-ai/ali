@@ -668,7 +668,6 @@ if __name__ == "__main__":
     query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
     
-    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
     citations = get_stored_citations(top_k_docs, dnu_metadata)
     print(citations)
 
@@ -740,5 +739,6 @@ if __name__ == "__main__":
         print(f"Are all matching entries equal? {are_all_equal}")
 
 
+    citations2 = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
     # compare that the live-generated citations equal the stored ones
     compare_nested_contents_detailed(citations, citations2)
