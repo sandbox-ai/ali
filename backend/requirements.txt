@@ -7,3 +7,4 @@ flask-cors
 transformers
 torch
 python-dotenv
+sentence-transformers
