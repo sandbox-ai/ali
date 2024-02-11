@@ -30,6 +30,7 @@ if __name__ == "__main__":
     logging_filepath = logger.create_log_file(bot_name, config, os.path.join(logging_dir, session_name))
 
     try:
+
         # Take user query:
         user_query = input("Pregunta sobre el DNU impulsado por el presidente Javier Milei: ")
 

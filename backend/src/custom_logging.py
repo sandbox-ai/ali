@@ -43,7 +43,7 @@ def save_user_message(user_message: str, filepath: str):
         f.write(formatted_message)
 
 
-def save_bot_message(bot_message: str, filepath: str, citations: dict = None, bot_name: str = "Bot"):
+def save_bot_message(bot_message: str, bot_name: str, filepath: str, citations: dict = None):
     citation_text = ""
     if citations is not None:
         citation_text = "Sources:"
@@ -55,7 +55,7 @@ f"""\
 ========================================
 {bot_name}: {bot_message}
 
-----------------------------------
+----------------------------------------
 {citation_text}
 """
     )
