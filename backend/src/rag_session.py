@@ -25,7 +25,7 @@ Prompt Stuff:
 - "explicas de donde viene la info"????
 
 ToDo:
-- use a logger? is this needed or just helpful? justicio did it and pablito did something with logger but I don't know what. 
+- use a logger? is this needed or just helpful? justicio did it and pablito did something with logger but I don't know what. -> Pablo dice: "Para mi viene bien loggear para tener records de lo que usen nuestros usuarios y que si crashea saber por que."
 - determine top_k based on the top number of queries and the average number of articles per title or chapter. 
 - make the embedding of the vectorstore run only if vectorstore is not locally (where it's supposed to be)
 - instructor with refine to include modified laws
@@ -47,7 +47,7 @@ def timeit(method):
 class DataLoader:
     @staticmethod
     def load_json(filepath: str) -> dict:
-        with open(filepath, "r") as file:
+        with open(filepath, "r", encoding='utf-8') as file:
             return json.load(file)
 
 
@@ -55,15 +55,11 @@ class Embedder:
     def __init__(self, model_name: str):
         self.model = SentenceTransformer(model_name)
 
-    def embed_text(
-        self, data: Union[str, Dict[str, str]]
-    ) -> Union[np.ndarray, Dict[str, np.ndarray]]:
+    def embed_text(self, data: Union[str, Dict[str, str]]) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         if isinstance(data, dict):
             return {key: self.model.encode(value) for key, value in data.items()}
-            logging.info(f"Embedding {len(data)} documents")
         elif isinstance(data, str):
             return self.model.encode(data)
-            logging.info(f"Embedding {len(data)} documents")
         else:
             raise ValueError("Input must be either str or dict")
 
@@ -237,28 +233,24 @@ class PipelineTester:
 
 
 class QueryEngine:
-    def __init__(
-        self,
-        vectorstore: Dict[str, np.ndarray],
-        embedder: SentenceTransformer,
-        legal_docs: Dict[str, str],
-        legal_metadata, # complete type hint
-        top_k: Optional[int] = 5,
-    ):
+    def __init__(self,
+                 vectorstore: Dict[str, np.ndarray],
+                 embedder: Embedder,
+                 legal_docs: Dict[str, str],
+                 legal_metadata, # complete type hint
+                 top_k: Optional[int] = 5
+                 ):
         self.vectorstore = vectorstore
         self.embedder = embedder
         self.legal_docs = legal_docs
         #self.legal_metadata= legal_metadata
         self.top_k = top_k
+
         # Precompute norms of vectors to speed up vector search
-        self.vector_norms = {
-            key: np.linalg.norm(vector) for key, vector in vectorstore.items()
-        }
+        self.vector_norms = {key: np.linalg.norm(vector) for key, vector in vectorstore.items()}
 
     @timeit
-    def query_similarity(
-        self, query: str, top_k: Optional[int] = None
-    ) -> Tuple[Dict[str, float], Dict[str, str]]:
+    def query_similarity(self, query: str, top_k: Optional[int] = None) -> Tuple[Dict[str, float], Dict[str, str]]:
         if top_k is None:
             top_k = self.top_k
         query_vector = self.embedder.embed_text(query)
@@ -267,7 +259,8 @@ class QueryEngine:
         # Compute the cosine similarity between the query vector and all vectors in the vectorstore
         for key, vector in self.vectorstore.items():
             similarity = cosine_similarity(
-                query_vector.reshape(1, -1), vector.reshape(1, -1)
+                query_vector.reshape(1, -1),
+                vector.reshape(1, -1)
             )
             docs_with_scores[key] = similarity[0][0]
 
@@ -327,7 +320,7 @@ class QueryEngine:
         streaming: bool = True,
         top_k_docs: Optional[Dict[str, float]] = None,
         matching_docs: Optional[Dict[str, str]] = None,
-    ) -> None:
+    ) -> Union[str, None]:
         """
         Generates a response from a legal assistant model using OpenAI's GPT.
 
@@ -476,6 +469,7 @@ class QueryEngine:
 
     
     # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
+
 def generate_metadata_from_key(key: str) -> dict:
     """
     Extracts metadata from a given key string. The metadata includes 'documento',
