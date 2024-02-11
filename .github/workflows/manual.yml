@@ -63,7 +63,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             export IMAGE_NAME=ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}
-            export TAG=${{ github.sha }}
+            export TAG=${{ github.event.inputs.tag_version }}
 
             mkdir -p ~/${{ env.SERVICE }}
             cd ${{ env.SERVICE }}
@@ -136,7 +136,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             export IMAGE_NAME=ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}
-            export TAG=${{ github.sha }}
+            export TAG=${{ github.event.inputs.tag_version }}
 
             mkdir -p ~/${{ env.SERVICE }}
             cd ${{ env.SERVICE }}
