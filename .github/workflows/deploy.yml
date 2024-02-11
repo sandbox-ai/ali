@@ -288,6 +288,9 @@ jobs:
             sudo docker image prune -af --filter "until=$((15*24))h"
             echo "Remove old images root"
             docker image prune -af --filter "until=$((15*24))h"
+            echo "Remove older image from backend"
+            docker images --format "{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}" | grep backend | sort -r | tail -n +4 | cut -f2 | xargs -r docker rmi
+            sudo docker images --format "{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}" | grep backend | sort -r | tail -n +4 | cut -f2 | xargs -r docker rmi
 
             export IMAGE_NAME=ghcr.io/${{ env.REPOSITORY }}/${{ env.SERVICE }}
             export TAG=${{ github.sha }}
