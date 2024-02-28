@@ -35,7 +35,10 @@
           <nb-card-body style="border-bottom: 1px solid #cccccc;">
             <input type="text" nbInput placeholder="Ingrese su pregunta" class="question" [(ngModel)]="userInput" (keyup.enter)="onEnter()" [disabled]="!question">
           </nb-card-body>
-          <nb-card-footer style="text-align: center;" *ngIf="question">
+          <nb-card-footer style="text-align: center; display: flex; flex-direction: column;" *ngIf="question">
+            <button nbButton outline status="primary" id="button-res" size="small" (click)="onEnter()">
+              <i class="material-icons">circle</i>
+            </button>
             <nb-checkbox status="info" [(ngModel)]="inputCheckbox" style="width: 100%;"><span id='highlight-terms'>Acepto los <span id='open-terms' (click)="openDialog(dialogTerms)">Términos y Condiciones</span></span></nb-checkbox>
           </nb-card-footer>
         </nb-card>

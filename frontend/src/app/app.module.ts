@@ -9,6 +9,7 @@ import { NbThemeModule, NbLayoutModule, NbCardModule, NbCheckboxModule } from '@
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { NbSearchModule } from '@nebular/theme'
 import { NbIconModule } from '@nebular/theme';
+import { NbButtonModule } from '@nebular/theme';
 import { NbDialogModule } from '@nebular/theme';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -33,6 +34,7 @@ import {NgxTypedJsModule} from 'ngx-typed-js';
     NbEvaIconsModule,
     NbSearchModule,
     NbIconModule,
+    NbButtonModule,
     NbCardModule,
     NbCheckboxModule,
     NbDialogModule.forRoot(),
