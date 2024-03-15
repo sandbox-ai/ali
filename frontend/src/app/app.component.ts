@@ -11,7 +11,7 @@ import { environment } from '../environments/environment';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = "La Ley de Milei";
+  title = "IA Legal Argentina";
 
   userInput: string = "";
   inputCheckbox: boolean = false;
