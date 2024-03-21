@@ -1,6 +1,17 @@
 # application.py
 # -*- encoding: utf-8 -*-
 
+
+__author__ = "SandboxAI Team"
+__copyright__ = "Copyright 2023, Team Research"
+__credits__ = ["SandboxAI"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "SanboxAI Team"
+__email__ = "sandboxai <dot> org <at> proton <dot> me"
+__status__ = "Development"
+
+
 from src.rag_session import *
 import src.custom_logging as logger
 import logging
@@ -19,80 +30,23 @@ import multiprocessing
 import http.server
 import socketserver
 
-# Set up logging level:
+
+# Set up logging level
 logging.basicConfig(level=logging.INFO)
 
 # Path to session configuration file:
 config_filepath = r"./config.json"
 
-# Set up RAG session:
-#session = RAGSession(config_filepath)
-
 home = Blueprint('home_views', __name__)
-
-try:
-    # Set up session:
-    #session.set_up()
-    hello = "hello"
-
-except Exception as e:
-    # Extract error info:
-    tb = traceback.extract_tb(e.__traceback__)
-    filename, line, func, text = tb[-1]
-
-    # Log the error
-    error_message = textwrap.dedent(f"""\
-        ========================================
-        ||               ERROR                ||
-        ========================================   
-        File: {filename}
-        Function name: {func}
-        Line {line}: 
-            {text}
-        
-        Error: {e}""")
-
-    #logger.save_string(error_message, session.logging_filepath)
-    raise
-
-file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-file_path_dnu_unpreppended = (
-    "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-)
-file_path_vectorstore = "./data/dnu_vectorstore.json"
-
-
-data_loader = DataLoader()
-dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-dnu_unpreppended = data_loader.load_json(
-    "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-)
-    
-dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
-
-# WILL THIS LOAD EVERYTIME someone asks a question?
-#embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
-
-if not os.path.exists(file_path_vectorstore):
-    vectorstore = embedder.embed_text(dnu)
-    VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
-else:
-    vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
-
-embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
-
-# Initialize the QueryEngine with necessary parameters
-query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
-
-
-
+query_engine = None
+embedder = None
+dnu_metadata = None
 
 
 def flaskServer(ip='127.0.0.1', port=5000):
     app = create_application()
-    # app.run(host=ip, port=port, debug=True)
     logging.info("Flask serving...")
-    app.run(port=port, debug=True, host=ip, use_reloader=False)
+    app.run(port=port, debug=False, host=ip, use_reloader=False)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -115,6 +69,40 @@ def create_application():
 
 
 ################################################
+# Initialize query_engine 
+################################################
+def initialize_query_engine():
+    global query_engine
+    global embedder
+    global dnu_metadata
+
+    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
+    file_path_dnu_unpreppended = (
+        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+    )
+    file_path_vectorstore = "./data/dnu_vectorstore.json"
+
+    data_loader = DataLoader()
+    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
+    dnu_unpreppended = data_loader.load_json(
+        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
+    )
+        
+    dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
+
+    if not os.path.exists(file_path_vectorstore):
+        vectorstore = embedder.embed_text(dnu)
+        VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
+    else:
+        vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
+
+    embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
+
+    # Initialize the QueryEngine with necessary parameters
+    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
+
+
+################################################
 # Heartbeat
 ################################################
 @home.route("/api/heartbeat", methods=["GET"])
@@ -128,24 +116,21 @@ def r_heartbeat():
 ################################################
 @home.route("/api/question", methods=["POST"])
 @home.route("/question", methods=["POST"])
-def r_question(embedder = embedder, query_engine = query_engine):
+# def r_question(embedder = embedder, query_engine = query_engine):
+def r_question():
     json_result = request.get_json()
     user_query = json_result.get("question", "")
 
     logging.info(f"Param received")
     logging.info(f"Question : {user_query}")
 
-
     # Use the query_similarity method to find documents similar to the query
     top_k_docs, matching_docs = query_engine.query_similarity(
         query=user_query
     )
 
-
-
-    #WITHOUT STREAMING
-    
-    #Respond user query:
+    # WITHOUT STREAMING
+    # Respond user query:
     text = query_engine.generate_llm_response(
         query=user_query, 
         client=OpenAI(),
@@ -158,15 +143,8 @@ def r_question(embedder = embedder, query_engine = query_engine):
     )
 
     citations = get_stored_citations(top_k_docs, dnu_metadata)
-
-
-    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
-
-
-
-
-    #logging.info(f"Response Answer: {text}")
+    # citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+    # citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
 
     sources = []
     for citation in citations.values():
@@ -180,8 +158,6 @@ def r_question(embedder = embedder, query_engine = query_engine):
         logging.info(source)
 
     return jsonify(answer=text, sources=sources, error="OK")
-
-
 
     # WITH STREAMING
 
@@ -206,7 +182,6 @@ def r_question(embedder = embedder, query_engine = query_engine):
     #return Response(generate_stream(), content_type='application/json')
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--ip', action='store', default='127.0.0.1',
@@ -221,6 +196,7 @@ if __name__ == '__main__':
     port = str(args.port)
     env = str(args.env)
     app = create_application()
+    initialize_query_engine()
 
     if (env == 'prod'):
         sys.stdout.flush()
