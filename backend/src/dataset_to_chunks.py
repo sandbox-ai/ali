@@ -4,9 +4,17 @@ from copy import deepcopy
 import re
 import os
 
-""" Generic script to chunk a text file based on input parameters """
 
-""" --- SPLITTING METHODS ----------------------------------------------------- """
+__author__ = "SandboxAI Team"
+__copyright__ = "Copyright 2023, Team Research"
+__credits__ = ["SandboxAI"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "SanboxAI Team"
+__email__ = "sandboxai <dot> org <at> proton <dot> me"
+__status__ = "Development"
+
+
 def basic_split(text: str, max_chunk_size: int, min_chunk_size: int, metadata: dict = None):
     """Chunk a list into smaller lists of a given size, sliding in steps."""
     # Initialize variables:
@@ -144,7 +152,6 @@ def window_slide_split_paragraphs(text: str, max_chunk_size: int, min_chunk_size
     return chunks
 
 
-""" --- EXTRACT JSON ---------------------------------------------------------- """
 def extract_text_with_path(source: dict, parent_path=''):
     """
     Extracts text and its path from a nested JSON structure.
@@ -263,5 +270,3 @@ if __name__ == "__main__":
     # Save to JSON file:
     with open(target_chunks_path, 'w', encoding='utf-8') as f:
         json.dump(chunks, f, ensure_ascii=False, indent=4)
-
-
