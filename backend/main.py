@@ -6,8 +6,20 @@ import logging
 import os
 from dotenv import load_dotenv
 
+
+__author__ = "SandboxAI Team"
+__copyright__ = "Copyright 2023, Team Research"
+__credits__ = ["SandboxAI"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "SanboxAI Team"
+__email__ = "sandboxai <dot> org <at> proton <dot> me"
+__status__ = "Development"
+
+
 load_dotenv()
 OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
+
 
 if __name__ == "__main__":
     # Set up logging level:
@@ -30,17 +42,14 @@ if __name__ == "__main__":
     logging_filepath = logger.create_log_file(bot_name, config, os.path.join(logging_dir, session_name))
 
     try:
-
         # Take user query:
         user_query = input("Pregunta sobre el DNU impulsado por el presidente Javier Milei: ")
-
 
         file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
         file_path_dnu_unpreppended = (
             "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
         )
         file_path_vectorstore = "./data/dnu_vectorstore.json"
-
 
         data_loader = DataLoader()
         dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
@@ -79,7 +88,6 @@ if __name__ == "__main__":
         )
 
         citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-
 
         # Print:
         print(text)
