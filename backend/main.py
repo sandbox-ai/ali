@@ -25,19 +25,9 @@ if __name__ == "__main__":
     # Set up logging level:
     logging.basicConfig(level=logging.INFO)
 
-    # Path to session configuration file:
-    config_filepath = r"./config.json"
-
-    if os.path.exists(config_filepath):
-        with open(config_filepath, 'r', encoding='utf-8') as file:
-            config = json.load(file)
-    else:
-        logging.error(f"[ ERROR ] Configuration file not found at '{config_filepath}'.")
-        exit()
-
     logging_dir = "./logs/"
     bot_name = "ALI"
-    session_name = "LaLeyDeMilei"
+    session_name = "ALI"
 
     logging_filepath = logger.create_log_file(bot_name, config, os.path.join(logging_dir, session_name))
 
@@ -45,17 +35,10 @@ if __name__ == "__main__":
         # Take user query:
         user_query = input("Pregunta sobre el DNU impulsado por el presidente Javier Milei: ")
 
-        file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-        file_path_dnu_unpreppended = (
-            "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-        )
         file_path_vectorstore = "./data/dnu_vectorstore.json"
 
         data_loader = DataLoader()
-        dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-        dnu_unpreppended = data_loader.load_json(
-            "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-        )
+        dnu = data_loader.load_json("./data/ALI/decreto_flat.json")
 
         embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
 

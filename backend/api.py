@@ -23,8 +23,6 @@ from flask import Response
 
 import sys
 import argparse
-import textwrap
-import traceback
 
 import multiprocessing
 import http.server
@@ -33,9 +31,6 @@ import socketserver
 
 # Set up logging level
 logging.basicConfig(level=logging.INFO)
-
-# Path to session configuration file:
-config_filepath = r"./config.json"
 
 home = Blueprint('home_views', __name__)
 query_engine = None
@@ -76,17 +71,10 @@ def initialize_query_engine():
     global embedder
     global dnu_metadata
 
-    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-    file_path_dnu_unpreppended = (
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
     file_path_vectorstore = "./data/dnu_vectorstore.json"
 
     data_loader = DataLoader()
-    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-    dnu_unpreppended = data_loader.load_json(
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
+    dnu = data_loader.load_json("./data/ALI/decreto_flat.json")
         
     dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
 
