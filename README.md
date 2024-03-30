@@ -2,11 +2,13 @@
 <p align="center"> Asistente Legal Inteligente </p>
 
 <div align="center">
+
 ![](https://img.shields.io/badge/huggingface-transformers-blue)
 ![](https://img.shields.io/badge/python-3.10-blue)
 ![](https://img.shields.io/badge/Angular-DD0031?style=flat&logo=Angular)
 ![](https://img.shields.io/badge/GenAI-blue)
 ![](https://img.shields.io/badge/Made%20with-Love-red)
+
 </div>                 
 
 
