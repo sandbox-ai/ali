@@ -52,7 +52,9 @@ You can also contact us directly via email at `sandboxai.org@proton.me`.
     - [Testing](#testing)
 - [Long-term vision](#long-term-vision)
 - [Thank you notes](#thank-you-notes)
+- [Contributing](#contributing)
 - [Sponsoring the project](#sponsoring-the-project)
+- [License](#license)
 
 
 ## Description
@@ -181,11 +183,21 @@ The other one are the [Mamba](https://arxiv.org/abs/2312.00752) style LLMs, whic
 Huge thanks to the [Justicio](https://github.com/bukosabino/justicio) team from Spain, who gave us a lot of tips and shared their embedding model with us
 Definetly go check their project and talk to the creators!
 
+## Contributing
+1. Fork it!
+2. Create your feature branch: `git checkout -b my-new-feature`
+3. Commit your changes: `git commit -am 'Add some feature'`
+4. Push to the branch: `git push origin my-new-feature`
+5. Submit a pull request :D
+
+Please refer to CONTRIBUTING.md for a detailed explanation of branch/commit naming conventions
+
 ## Sponsoring the project
 As of now, ALI is running on AWS using the OpenAI api key. Both things are expensive and as of now these costs are being covered by the sandbox.ai devs. 
 If you would like to sponsor this project (either by covering the AWS costs or the OpenAI api key costs), please contact us at `sandboxai.org@proton.me`.
 
-
+## License
+MIT
 
 
 
