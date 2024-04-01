@@ -170,7 +170,7 @@ We plan to test ALI with [ragas](https://github.com/explodinggradients/ragas), b
 
 ## Long-term vision
 We are hoping to be able to run ALI locally smartphones. 
-For one reason, that seems to be the most efficient way (why use cloud when lot's of smartphone compute is idle?), but most importantly, that will give a lot of agency to each citizen. We develop it, we all own it. We are all free.
+For one reason, that seems to be the most efficient way (why use cloud when lot's of smartphone compute is idle?), but most importantly, that will give a lot of agency to each citizen. We develop it, we all own it. We are all free.  
 Plus this saves a lot on compute costs (what is the cheapest way to serve 47 million potential users? Locally of course!)
 This space is still green, there's a lot of work going on. 
 
