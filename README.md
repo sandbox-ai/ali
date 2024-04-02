@@ -162,7 +162,7 @@ As of now, ALI is running on AWS using our OpenAI API key. Both things are expen
 If you find this project useful and would like to sponsor us (either by covering the AWS costs or the OpenAI api key costs), please contact us at `sandboxai.org@proton.me`.
 
 ## License
-MIT
+GPL
 
 
 
