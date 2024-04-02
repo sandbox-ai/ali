@@ -56,3 +56,6 @@ dump.rdb
 
 # Pyenv
 .python-version
+
+# Backend logs
+backend/logs/
