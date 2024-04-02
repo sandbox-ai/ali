@@ -1,3 +1,14 @@
+
+__author__ = "SandboxAI Team"
+__copyright__ = "Copyright 2023, Team Research"
+__credits__ = ["SandboxAI"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "SanboxAI Team"
+__email__ = "sandboxai <dot> org <at> proton <dot> me"
+__status__ = "Development"
+
+
 import os
 import json
 from typing import Dict, Any, Union, Tuple, Optional, List
@@ -10,7 +21,6 @@ from openai import OpenAI
 import time
 import logging
 import uuid
-from src.utils import *
 import copy
 
 """
@@ -106,134 +116,6 @@ class VectorStoreManager:
             return json.load(file, object_hook=ndarray_decoder)
 
 
-class PipelineTester:
-    @staticmethod
-    # Check that encoding/decoding of vectorstore's ndarrays is lossless
-    def verify_data_integrity(original_data: Dict[str, np.ndarray]) -> None:
-        """
-        Tests the integrity of data through encoding to JSON and decoding back to a dictionary.
-
-        This function encodes a dictionary (where values are numpy ndarrays) into a JSON string,
-        then decodes this JSON string back into a dictionary. It checks that the keys match between
-        the original and decoded dictionaries and that the values (ndarrays) are equal in type and content.
-
-        Args:
-            original_data: A dictionary with string keys and numpy ndarray values.
-
-        Raises:
-            AssertionError: If the keys do not match between the original and decoded dictionaries,
-                            or if the ndarray values are not equal in type and content.
-        """
-        # Encode to JSON string
-        encoded_data = json.dumps(original_data, cls=NdarrayEncoder)
-
-        # Decode back to dictionary
-        ndarray_decoder = NdarrayDecoder()
-        decoded_data = json.loads(encoded_data, object_hook=ndarray_decoder)
-
-        # Check if keys match
-        assert set(original_data.keys()) == set(
-            decoded_data.keys()
-        ), "Keys do not match."
-        # Check if values match in type and content
-        for key in original_data:
-            assert isinstance(
-                decoded_data[key], np.ndarray
-            ), f"Value for {key} is not an ndarray."
-            np.testing.assert_array_equal(
-                original_data[key],
-                decoded_data[key],
-                err_msg=f"Arrays for {key} do not match.",
-            )
-
-        print("Test passed: No modification in data during encoding and decoding.")
-
-    @staticmethod
-    def plot_vectors(vectors: Dict[str, Any]) -> None:
-        """
-        Creates a t-SNE plot of vectors with Plotly. The function separates vectors into two categories based on their keys:
-        those that start with 'query:' and those that do not. The two categories are plotted separately. Vectors whose keys
-        start with 'query:' are plotted with a black star marker, while the rest are plotted with a point marker.
-
-        Args:
-            vectors: A dictionary where each key is a string and each value is a vector. The keys that start with 'query:'
-            are considered as query vectors and are plotted differently from the rest.
-
-        Returns:
-            None. The function displays a plot.
-
-        """
-
-        # Get the list of vectors and keys
-        vectors_list = list(vectors.values())
-        keys_list = list(vectors.keys())
-
-        # Convert the list of vectors to a numpy array
-        vectors_array = np.array(vectors_list)
-
-        # Create a t-SNE object
-        tsne = TSNE(n_components=2, random_state=0)
-
-        # Perform t-SNE
-        vectors_2d = tsne.fit_transform(vectors_array)
-
-        # Separate 2D coordinates for queries and non-queries
-        query_vectors_2d = np.array(
-            [vec for key, vec in zip(keys_list, vectors_2d) if key.startswith("query:")]
-        )
-        non_query_vectors_2d = np.array(
-            [
-                vec
-                for key, vec in zip(keys_list, vectors_2d)
-                if not key.startswith("query:")
-            ]
-        )
-        query_keys = [key for key in keys_list if key.startswith("query:")]
-        non_query_keys = [key for key in keys_list if not key.startswith("query:")]
-
-        # Create the plot for non-query vectors
-        fig = go.Figure(
-            data=go.Scatter(
-                x=non_query_vectors_2d[:, 0],
-                y=non_query_vectors_2d[:, 1],
-                mode="markers",
-                text=non_query_keys,  # This line sets the hover text
-                marker=dict(
-                    size=8,
-                    color=non_query_vectors_2d[:, 0],  # Set color equal to x
-                    colorscale="Viridis",  # One of plotly colorscales
-                    showscale=False,
-                ),
-            )
-        )
-
-        # Add the plot for query vectors, if there are any
-        if len(query_vectors_2d) > 0:
-            fig.add_trace(
-                go.Scatter(
-                    x=query_vectors_2d[:, 0],
-                    y=query_vectors_2d[:, 1],
-                    mode="markers",
-                    text=query_keys,  # This line sets the hover text
-                    marker=dict(
-                        size=8,
-                        color="black",  # Set color to black
-                        symbol="star",  # Set marker symbol to star
-                    ),
-                )
-            )
-
-        # Set the title and labels
-        fig.update_layout(
-            title=f"t-SNE plot of vectors",
-            xaxis=dict(title="Dimension 1"),
-            yaxis=dict(title="Dimension 2"),
-        )
-
-        # Show the plot
-        fig.show()
-
-        fig.write_html("t-SNE_plot.html", auto_open=True)
 
 
 class QueryEngine:
@@ -473,9 +355,8 @@ class QueryEngine:
 
         return complete_dicts
     
-
     
-    # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
+# This should go into the QueryEngine Class
 def generate_metadata_from_key(key: str) -> dict:
     """
     Extracts metadata from a given key string. The metadata includes 'documento',
@@ -531,6 +412,12 @@ def generate_metadata_from_key(key: str) -> dict:
         
     return metadata
 
+
+
+
+
+
+# This should go into the QueryEngine Class
 @timeit
 def get_stored_citations(top_k_docs, legal_metadata):
 # Initialize citations as an empty dict
@@ -545,200 +432,144 @@ def get_stored_citations(top_k_docs, legal_metadata):
                 citations[sub_key]['score'] = top_k_docs[key]
     return citations
 
-if __name__ == "__main__":
-    """   
-    ========================================
-    ||            example run             ||
-    ========================================   
-    """
-
-    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-    file_path_dnu_unpreppended = (
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
-    file_path_vectorstore = "./data/dnu_vectorstore.json"
-
-    query = "que va a pasar con los impuestos de los autos"
-
-    data_loader = DataLoader()
-    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-    dnu_unpreppended = data_loader.load_json(
-        "./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json"
-    )
-
-    dnu_metadata = data_loader.load_json('./data/dnu_metadata.json')
-    with open('./data/dnu_metadata.json', 'r') as f:
-        dnu_metadata = json.load(f)
-
-    embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
-
-    if not os.path.exists(file_path_vectorstore):
-        vectorstore = embedder.embed_text(dnu)
-        VectorStoreManager.save_vectorstore(file_path_vectorstore, vectorstore)
-    else:
-        vectorstore = VectorStoreManager.read_vectorstore(file_path_vectorstore)
-
-    query_vector = embedder.embed_text(query)
-
-    # Initialize the QueryEngine with necessary parameters
-    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
-
-    # Use the query_similarity method to find documents similar to the query
-    top_k_docs, matching_docs = query_engine.query_similarity(
-        query="que va a pasar con los impuestos de autos"
-    )
-
-    # Now, use the generate_llm_response method to generate a response based on the query and matching documents
-    text = query_engine.generate_llm_response(
-        query="que va a pasar con los impuestos de autos",
-        client=OpenAI(),
-        model_name= 'gpt-3.5-turbo-0125', #'gpt-4-1106-preview'# <-- ~15s, #'gpt-4' # <--- ~8s, #"gpt-4-0125-preview",# <--- slow AF, ~27s
-        temperature=0,
-        max_tokens=2000, # 1000
-        streaming=False,
-        top_k_docs=top_k_docs,
-        matching_docs=matching_docs,
-    )
-
-    print(text)
-
-    #citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
-    #citations = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
-    citations = get_stored_citations(top_k_docs, dnu_metadata)
-
-    print(citations)
-
-    """   
-    ========================================
-    ||          END example run           ||
-    ========================================   
-    """
 
 
-    """   
-    ========================================
-    ||       generate citations data      ||
-    ========================================   
-    """
-    file_path_dnu = "./data/LaLeyDeMilei-raw/decreto_flat.json"
-    data_loader = DataLoader()
-    dnu = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat.json")
-    dnu_unpreppended = data_loader.load_json("./data/LaLeyDeMilei-raw/decreto_flat_unpreppended.json")
-
-    # generate citations
-    def generate_citation_data(legal_doc) -> Dict[str, Dict[str, Dict]]:
+class PipelineTester:
+    @staticmethod
+    # Check that encoding/decoding of vectorstore's ndarrays is lossless
+    def verify_data_integrity(original_data: Dict[str, np.ndarray]) -> None:
         """
-        UPDATE DOCSTRING
-        Generates a dictionary of dictionaries, each containing text, score, and metadata extracted from the keys of matching_docs and the scores from top_k_docs. Each entry is uniquely identified by a randomly generated UUID.
+        Tests the integrity of data through encoding to JSON and decoding back to a dictionary.
 
-        Parameters:
-        - matching_docs (Dict[str, str]): A dictionary where keys are document identifiers and values are the text of the documents.
-        - top_k_docs (Dict[str, float]): A dictionary where keys are document identifiers and values are the scores of the documents.
+        This function encodes a dictionary (where values are numpy ndarrays) into a JSON string,
+        then decodes this JSON string back into a dictionary. It checks that the keys match between
+        the original and decoded dictionaries and that the values (ndarrays) are equal in type and content.
+
+        Args:
+            original_data: A dictionary with string keys and numpy ndarray values.
+
+        Raises:
+            AssertionError: If the keys do not match between the original and decoded dictionaries,
+                            or if the ndarray values are not equal in type and content.
+        """
+        # Encode to JSON string
+        encoded_data = json.dumps(original_data, cls=NdarrayEncoder)
+
+        # Decode back to dictionary
+        ndarray_decoder = NdarrayDecoder()
+        decoded_data = json.loads(encoded_data, object_hook=ndarray_decoder)
+
+        # Check if keys match
+        assert set(original_data.keys()) == set(
+            decoded_data.keys()
+        ), "Keys do not match."
+        # Check if values match in type and content
+        for key in original_data:
+            assert isinstance(
+                decoded_data[key], np.ndarray
+            ), f"Value for {key} is not an ndarray."
+            np.testing.assert_array_equal(
+                original_data[key],
+                decoded_data[key],
+                err_msg=f"Arrays for {key} do not match.",
+            )
+
+        print("Test passed: No modification in data during encoding and decoding.")
+
+    @staticmethod
+    def plot_vectors(vectors: Dict[str, Any]) -> None:
+        """
+        Creates a t-SNE plot of vectors with Plotly. The function separates vectors into two categories based on their keys:
+        those that start with 'query:' and those that do not. The two categories are plotted separately. Vectors whose keys
+        start with 'query:' are plotted with a black star marker, while the rest are plotted with a point marker.
+
+        Args:
+            vectors: A dictionary where each key is a string and each value is a vector. The keys that start with 'query:'
+            are considered as query vectors and are plotted differently from the rest.
 
         Returns:
-        - Dict[str, Dict]: A dictionary where each key is a UUID string and each value is a dictionary containing 'text', 'score', 'metadata', 'start_char_idx', and 'end_char_idx'.
+            None. The function displays a plot.
+
         """
 
-        dnu_metadata = {
-            key: {
-                str(uuid.uuid4()): {
-                    'text': value,
-                    'score': 0, 
-                    'metadata': generate_metadata_from_key(key),
-                    'start_char_idx': None,
-                    'end_char_idx': None, 
-                }
-            } for key, value in dnu.items()
-        }
+        # Get the list of vectors and keys
+        vectors_list = list(vectors.values())
+        keys_list = list(vectors.keys())
 
-        return dnu_metadata
+        # Convert the list of vectors to a numpy array
+        vectors_array = np.array(vectors_list)
 
+        # Create a t-SNE object
+        tsne = TSNE(n_components=2, random_state=0)
 
-    dnu_metadata = generate_citation_data(dnu)
-    dnu_metadata
+        # Perform t-SNE
+        vectors_2d = tsne.fit_transform(vectors_array)
 
-    with open('./data/dnu_metadata.json', 'w') as f:
-        json.dump(dnu_metadata, f)
+        # Separate 2D coordinates for queries and non-queries
+        query_vectors_2d = np.array(
+            [vec for key, vec in zip(keys_list, vectors_2d) if key.startswith("query:")]
+        )
+        non_query_vectors_2d = np.array(
+            [
+                vec
+                for key, vec in zip(keys_list, vectors_2d)
+                if not key.startswith("query:")
+            ]
+        )
+        query_keys = [key for key in keys_list if key.startswith("query:")]
+        non_query_keys = [key for key in keys_list if not key.startswith("query:")]
 
-    with open('./data/dnu_metadata.json', 'r') as f:
-        dnu_metadata = json.load(f)
+        # Create the plot for non-query vectors
+        fig = go.Figure(
+            data=go.Scatter(
+                x=non_query_vectors_2d[:, 0],
+                y=non_query_vectors_2d[:, 1],
+                mode="markers",
+                text=non_query_keys,  # This line sets the hover text
+                marker=dict(
+                    size=8,
+                    color=non_query_vectors_2d[:, 0],  # Set color equal to x
+                    colorscale="Viridis",  # One of plotly colorscales
+                    showscale=False,
+                ),
+            )
+        )
 
+        # Add the plot for query vectors, if there are any
+        if len(query_vectors_2d) > 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=query_vectors_2d[:, 0],
+                    y=query_vectors_2d[:, 1],
+                    mode="markers",
+                    text=query_keys,  # This line sets the hover text
+                    marker=dict(
+                        size=8,
+                        color="black",  # Set color to black
+                        symbol="star",  # Set marker symbol to star
+                    ),
+                )
+            )
 
+        # Set the title and labels
+        fig.update_layout(
+            title=f"t-SNE plot of vectors",
+            xaxis=dict(title="Dimension 1"),
+            yaxis=dict(title="Dimension 2"),
+        )
 
-    query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
+        # Show the plot
+        fig.show()
 
-    
-    citations = get_stored_citations(top_k_docs, dnu_metadata)
-    print(citations)
-
-    head_dict(citations, 2)
-    head_dict(dnu_metadata, 2)
-
-
-
-    def compare_nested_contents_detailed(citations, citations2):
-        def find_matching_entry(unique_attributes, target_dict):
-            """
-            Finds an entry in the target_dict that matches the unique_attributes.
-            unique_attributes is a dictionary containing attributes to match.
-
-            Parameters:
-            - unique_attributes (dict): Attributes used for matching entries.
-            - target_dict (dict): The dictionary to search for a matching entry.
-
-            Returns:
-            - tuple: A tuple containing the key and value of the matching entry, or (None, None) if no match is found.
-            """            
-
-            for key, value in target_dict.items():
-                if all(value['metadata'][attr] == unique_attributes[attr] for attr in unique_attributes):
-                    return key, value
-            return None, None
-
-        are_all_equal = True
-
-        for id1, content1 in citations.items():
-            # Construct a unique identifier based on known unique attributes
-            unique_attributes = {attr: content1['metadata'][attr] for attr in ['documento', 'titulo', 'capitulo', 'articulo']}
-        
-            # Find the matching entry in citations2
-            matching_id, matching_entry = find_matching_entry(unique_attributes, citations2)
-        
-            if matching_entry:
-                # Assume equality until proven otherwise
-                current_entry_equal = True
-                # Explicitly iterate over sub-keys for detailed comparison
-                for sub_key in content1:
-                    if sub_key in matching_entry:
-                        if content1[sub_key] == matching_entry[sub_key]:
-                            print(f"  Sub-key {sub_key} in {id1} and {matching_id}: Equal")
-                        else:
-                            print(f"  Sub-key {sub_key} in {id1} and {matching_id}: Not equal")
-                            current_entry_equal = False
-                            # Further detailed comparison for sub-sub-keys
-                            for sub_sub_key in content1[sub_key]:
-                                if sub_sub_key in matching_entry[sub_key]:
-                                    if content1[sub_key][sub_sub_key] == matching_entry[sub_key][sub_sub_key]:
-                                        print(f"    Sub-sub-key {sub_sub_key} in {id1} and {matching_id}: Equal")
-                                    else:
-                                        print(f"    Sub-sub-key {sub_sub_key} in {id1} and {matching_id}: Not equal")
-                                else:
-                                    print(f"    Sub-sub-key {sub_sub_key} not found in {matching_id}")
-                    else:
-                        print(f"  Sub-key {sub_key} not found in {matching_id}")
-                        current_entry_equal = False
-            
-                if current_entry_equal:
-                    print(f"Matching content for {id1} and {matching_id} is equal in all aspects.")
-                else:
-                    are_all_equal = False
-            else:
-                print(f"No matching content found for {id1}.")
-                are_all_equal = False
-
-        print(f"Are all matching entries equal? {are_all_equal}")
+        fig.write_html("t-SNE_plot.html", auto_open=True)
 
 
-    citations2 = query_engine.get_stored_citations(top_k_docs, dnu_metadata)
-    # compare that the live-generated citations equal the stored ones
-    compare_nested_contents_detailed(citations, citations2)
+
+
+
+
+
+
+
+
+

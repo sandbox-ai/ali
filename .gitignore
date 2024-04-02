@@ -1,5 +1,7 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+**/.env
+
 # Compiled output
 frontend/dist
 frontend/tmp
@@ -56,3 +58,6 @@ dump.rdb
 
 # Pyenv
 .python-version
+
+# Backend logs
+backend/logs/

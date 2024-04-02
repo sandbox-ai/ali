@@ -1,11 +1,10 @@
 from datetime import datetime
 import textwrap
 import logging
-import json
 import os
 
 
-def create_log_file(app_name: str, config: dict, log_directory: str):
+def create_log_file(app_name: str, log_directory: str):
     # Getting current system time and date
     current_time = datetime.now()
 
@@ -23,8 +22,6 @@ def create_log_file(app_name: str, config: dict, log_directory: str):
     # Create log file:
     with open(filepath, 'w') as f:
         f.write(formatted_message)
-        json.dump(config, f, indent=4)
-        f.write('\n\n')
 
     return filepath
 
@@ -43,9 +40,9 @@ def save_user_message(user_message: str, filepath: str):
         f.write(formatted_message)
 
 
-def save_bot_message(bot_message: str, bot_name: str, filepath: str, citations: dict = None):
+def save_bot_message(bot_message: str, bot_name: str, filepath: str, citations: dict = {}):
     citation_text = ""
-    if citations is not None:
+    if citations != {}:
         citation_text = "Sources:"
         for citation in citations.values():
             citation_text += f"\n\n{citation['score']*100:.2f}% - {citation['text']}\n{citation['metadata']}, {citation['start_char_idx']}-{citation['end_char_idx']}"
