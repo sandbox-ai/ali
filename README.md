@@ -73,7 +73,7 @@ Also see `backend/README.md` and `frontend/README.md`
 ## Description
 ### Overview
 
-The complexity of legal documents and legalese terminology presents a barrier to most of the population, who wont't able to interact and understand their own legal system unless aided by a professional in the field.
+The complexity of legal documents and legalese terminology presents a barrier to most of the population, who won't able to interact and understand their own legal system unless aided by a professional in the field.
 
 To help close this gap in the Spanish speaking world, we built the Asistente Legal Inteligente (or ALI). It uses Retrieval Augmented Generation ([RAG](https://arxiv.org/abs/2005.11401)), i.e. searching a vectorstore given an user query and formulating an answer with a Large Language Model (LLM), and a custom dataset that lays a RAG optimized structure. 
 
@@ -81,9 +81,7 @@ The result is a grounded and comprehensive assistant that can answer questions a
 
 ### Technical information
 #### General
-The user query is embedded using a custom Spanish [embedding model](https://huggingface.co/dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn), then used to search for the best matching legal documents with cosine-similarity.
-
-To formulate the answer, an LLM osted with a [OpenAI compatible API endpoint](https://platform.openai.com/docs/api-reference) is queried by passing a custom prompt and the best matching documents. 
+The user query is embedded using a custom Spanish [embedding model](https://huggingface.co/dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn), and then used to search for the best matching legal documents with cosine-similarity. To formulate the answer, an LLM hosted with an [OpenAI compatible API endpoint](https://platform.openai.com/docs/api-reference) is queried with a custom prompt and the relevant documents. 
 
 This technique has ample room for improvements. See our roadmap on [RAG improvements](#improvements-over-baseline-rag). 
 You can check out the RAG system written from scratch in `src/rag_session.py`   
@@ -92,7 +90,7 @@ You can check out the RAG system written from scratch in `src/rag_session.py`
 We've tested both [llama_index](https://github.com/run-llama/llama_index) and [langchain](https://github.com/langchain-ai/langchain), but found them too restrictive and in the end more cumbersome than developing our own pipeline over [transformers](https://huggingface.co/docs/transformers/en/index), enabling finer control and suprevision. 
 
 #### Main challenges encountered
-The main problem we encountered with a RAG pipeline over argentinian legal data was the embedding of the information. This problem has two parts: 
+The main problem we encountered with a RAG pipeline over Argentinian legal data was the embedding of the information. This problem has two parts: 
 
 1. Embedding model:
 
@@ -114,7 +112,7 @@ instead of just
 ``` 
 
 
-All the results that we found in relation to the embedding models were a direct conclusion of plotting the resulting embedding vectors with the dimensionality reduction technique [t-SNE: t-distributed Stochastic Neighbor Embedding](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html). Note that there are alternatives such as [UMAP: Universal Manifold Approximation & Projection](https://github.com/lmcinnes/umap)
+All the results we found in relation to the embedding models were a direct conclusion of plotting the resulting embedding vectors with the dimensionality reduction technique [t-SNE: t-distributed Stochastic Neighbor Embedding](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html). Note that there are alternatives such as [UMAP: Universal Manifold Approximation & Projection](https://github.com/lmcinnes/umap)
 
 #### Improvements over baseline RAG. 
 There are many improvements to be made over this baseline RAG. The following is a non-exhaustive list: 
@@ -137,7 +135,7 @@ We have built [a tool to scrap](https://github.com/sandbox-ai/Boletin-Oficial-Ar
 This raw dataset must be parsed into the format described earlier (prepending contextual metadata). Given the inconsistent and unpredictable formatting of the documents and texts, there is no simple programmatic parsing to automate the process. We found that various NLP techniques are useful in automating this task (prompting LLMs, sentence-transformers, NER). 
 
 #### Testing
-[Ragas](https://github.com/explodinggradients/ragas) is a framework to evaluate RAG pipelines that could be used to test ALI. It is important to acknowledge the costs using a paid API (we tested this with a relatively small document and GPT-4 and spent 40 USD in half an hour)    
+[Ragas](https://github.com/explodinggradients/ragas) is a framework to evaluate RAG pipelines that could be used to test ALI. It is important to acknowledge the costs using a paid API (we tested this with a relatively small document and GPT-4 and spent 40 USD in half an hour!)    
 
 ## Acknowledgements
 Huge thanks to the [Justicio](https://github.com/bukosabino/justicio) team from Spain, who gave us a lot of tips and shared their embedding model with us
