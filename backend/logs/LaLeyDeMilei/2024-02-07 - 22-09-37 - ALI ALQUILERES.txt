@@ -1,0 +1,23 @@
+2024/02/07 - 22:09:37 - ALI ALQUILERES
+--------------------------------------
+{
+    "session_name": "LaLeyDeMilei",
+    "chunk_size": 0,
+    "chunk_overlap": 40,
+    "n_queries": 4,
+    "ranking_mode": "reciprocal_rerank",
+    "vector_similarity_top_k": 5,
+    "fusion_top_k": 8,
+    "rawdata_filepath": "./data/LaLeyDeMilei/",
+    "vectorstores_dir": "./vectorstores/",
+    "logging_dir": "./logs/",
+    "gpt_version": "gpt-4-1106-preview",
+    "model_max_tokens": 2048,
+    "model_temperature": 0,
+    "model_host": "local",
+    "local_embeddings_model": "dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn",
+    "use_custom_prompts": true,
+    "bot_name": "ALI Alquileres",
+    "autosetup": false
+}
+

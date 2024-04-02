@@ -1,0 +1,37 @@
+2024/02/12 - 10:48:32 - LA LEY DE MILEI
+---------------------------------------
+{}
+
+========================================
+User: que dice el articulo 37
+
+========================================
+Bot: Lamento informarte que en el contexto proporcionado no se menciona un "Artículo 37", por lo tanto, no puedo brindarte información específica sobre dicho artículo. Si tienes alguna otra pregunta o necesitas información adicional, por favor házmelo saber.
+
+----------------------------------
+Sources:
+
+51.03% - Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE. Fecha 20-12-2023. Titulo XI: SALUD. Capitulo III: Obras sociales (Ley N° 23.660). Articulo 292: Incorpórase como artículo 28 bis a la Ley N° 23.660, el siguiente:
+
+"ARTÍCULO 28 bis.- Para las entidades comprendidas en el inciso i) del artículo 1° de esta Ley regirá el régimen sancionatorio de la Ley N° 26.682."
+{'documento': 'Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE', 'titulo': 'Titulo XI: SALUD', 'capitulo': 'Capitulo III: Obras sociales (Ley N° 23.660)', 'articulo': 'Articulo 292', 'start_idx': 0, 'end_idx': 0}, None-None
+
+49.07% - Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE. Fecha 20-12-2023. Titulo X: JUSTICIA. Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994). Articulo 253: Sustitúyese el artículo 960 del Código Civil y Comercial de la Nación aprobado por la Ley N° 26.994 y sus modificatorias por el siguiente:
+
+"ARTÍCULO 960.- Facultades de los jueces. Los jueces no tienen facultades para modificar las estipulaciones de los contratos, excepto que sea a pedido de una de las partes cuando lo autoriza la ley."
+{'documento': 'Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE', 'titulo': 'Titulo X: JUSTICIA', 'capitulo': 'Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994)', 'articulo': 'Articulo 253', 'start_idx': 0, 'end_idx': 0}, None-None
+
+48.92% - Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE. Fecha 20-12-2023. Titulo XI: SALUD. Capitulo III: Obras sociales (Ley N° 23.660). Articulo 270: Incorpórase como inciso i) del artículo 1° a la Ley N° 23.660, el siguiente:
+
+"i) Todas las entidades comprendidas en el artículo 1° de la Ley N° 26.682."
+{'documento': 'Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE', 'titulo': 'Titulo XI: SALUD', 'capitulo': 'Capitulo III: Obras sociales (Ley N° 23.660)', 'articulo': 'Articulo 270', 'start_idx': 0, 'end_idx': 0}, None-None
+
+48.65% - Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE. Fecha 20-12-2023. Titulo X: JUSTICIA. Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994). Articulo 260: Incorpórase como inciso d) del artículo 1219 al Código Civil y Comercial de la Nación aprobado por la Ley N° 26.994 y sus modificatorias, el siguiente:
+
+"d) por cualquier causa fijada en el contrato."
+{'documento': 'Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE', 'titulo': 'Titulo X: JUSTICIA', 'capitulo': 'Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994)', 'articulo': 'Articulo 260', 'start_idx': 0, 'end_idx': 0}, None-None
+
+47.86% - Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE. Fecha 20-12-2023. Titulo X: JUSTICIA. Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994). Articulo 254: Sustitúyese el artículo 989 del Código Civil y Comercial de la Nación aprobado por la Ley N° 26.994 y sus modificatorias por el siguiente:
+
+"ARTÍCULO 989.- Control judicial de las cláusulas abusivas. La aprobación administrativa de las cláusulas generales no obsta a su control judicial."
+{'documento': 'Decreto de Necesidad y Urgencia N° DNU-2023-70-APN-PTE', 'titulo': 'Titulo X: JUSTICIA', 'capitulo': 'Capitulo I: Código Civil y Comercial de la Nación (Ley N° 26.994)', 'articulo': 'Articulo 254', 'start_idx': 0, 'end_idx': 0}, None-None

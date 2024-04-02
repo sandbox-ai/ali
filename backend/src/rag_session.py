@@ -10,7 +10,6 @@ from openai import OpenAI
 import time
 import logging
 import uuid
-from src.utils import *
 import copy
 
 """
@@ -106,134 +105,6 @@ class VectorStoreManager:
             return json.load(file, object_hook=ndarray_decoder)
 
 
-class PipelineTester:
-    @staticmethod
-    # Check that encoding/decoding of vectorstore's ndarrays is lossless
-    def verify_data_integrity(original_data: Dict[str, np.ndarray]) -> None:
-        """
-        Tests the integrity of data through encoding to JSON and decoding back to a dictionary.
-
-        This function encodes a dictionary (where values are numpy ndarrays) into a JSON string,
-        then decodes this JSON string back into a dictionary. It checks that the keys match between
-        the original and decoded dictionaries and that the values (ndarrays) are equal in type and content.
-
-        Args:
-            original_data: A dictionary with string keys and numpy ndarray values.
-
-        Raises:
-            AssertionError: If the keys do not match between the original and decoded dictionaries,
-                            or if the ndarray values are not equal in type and content.
-        """
-        # Encode to JSON string
-        encoded_data = json.dumps(original_data, cls=NdarrayEncoder)
-
-        # Decode back to dictionary
-        ndarray_decoder = NdarrayDecoder()
-        decoded_data = json.loads(encoded_data, object_hook=ndarray_decoder)
-
-        # Check if keys match
-        assert set(original_data.keys()) == set(
-            decoded_data.keys()
-        ), "Keys do not match."
-        # Check if values match in type and content
-        for key in original_data:
-            assert isinstance(
-                decoded_data[key], np.ndarray
-            ), f"Value for {key} is not an ndarray."
-            np.testing.assert_array_equal(
-                original_data[key],
-                decoded_data[key],
-                err_msg=f"Arrays for {key} do not match.",
-            )
-
-        print("Test passed: No modification in data during encoding and decoding.")
-
-    @staticmethod
-    def plot_vectors(vectors: Dict[str, Any]) -> None:
-        """
-        Creates a t-SNE plot of vectors with Plotly. The function separates vectors into two categories based on their keys:
-        those that start with 'query:' and those that do not. The two categories are plotted separately. Vectors whose keys
-        start with 'query:' are plotted with a black star marker, while the rest are plotted with a point marker.
-
-        Args:
-            vectors: A dictionary where each key is a string and each value is a vector. The keys that start with 'query:'
-            are considered as query vectors and are plotted differently from the rest.
-
-        Returns:
-            None. The function displays a plot.
-
-        """
-
-        # Get the list of vectors and keys
-        vectors_list = list(vectors.values())
-        keys_list = list(vectors.keys())
-
-        # Convert the list of vectors to a numpy array
-        vectors_array = np.array(vectors_list)
-
-        # Create a t-SNE object
-        tsne = TSNE(n_components=2, random_state=0)
-
-        # Perform t-SNE
-        vectors_2d = tsne.fit_transform(vectors_array)
-
-        # Separate 2D coordinates for queries and non-queries
-        query_vectors_2d = np.array(
-            [vec for key, vec in zip(keys_list, vectors_2d) if key.startswith("query:")]
-        )
-        non_query_vectors_2d = np.array(
-            [
-                vec
-                for key, vec in zip(keys_list, vectors_2d)
-                if not key.startswith("query:")
-            ]
-        )
-        query_keys = [key for key in keys_list if key.startswith("query:")]
-        non_query_keys = [key for key in keys_list if not key.startswith("query:")]
-
-        # Create the plot for non-query vectors
-        fig = go.Figure(
-            data=go.Scatter(
-                x=non_query_vectors_2d[:, 0],
-                y=non_query_vectors_2d[:, 1],
-                mode="markers",
-                text=non_query_keys,  # This line sets the hover text
-                marker=dict(
-                    size=8,
-                    color=non_query_vectors_2d[:, 0],  # Set color equal to x
-                    colorscale="Viridis",  # One of plotly colorscales
-                    showscale=False,
-                ),
-            )
-        )
-
-        # Add the plot for query vectors, if there are any
-        if len(query_vectors_2d) > 0:
-            fig.add_trace(
-                go.Scatter(
-                    x=query_vectors_2d[:, 0],
-                    y=query_vectors_2d[:, 1],
-                    mode="markers",
-                    text=query_keys,  # This line sets the hover text
-                    marker=dict(
-                        size=8,
-                        color="black",  # Set color to black
-                        symbol="star",  # Set marker symbol to star
-                    ),
-                )
-            )
-
-        # Set the title and labels
-        fig.update_layout(
-            title=f"t-SNE plot of vectors",
-            xaxis=dict(title="Dimension 1"),
-            yaxis=dict(title="Dimension 2"),
-        )
-
-        # Show the plot
-        fig.show()
-
-        fig.write_html("t-SNE_plot.html", auto_open=True)
 
 
 class QueryEngine:
@@ -473,9 +344,8 @@ class QueryEngine:
 
         return complete_dicts
     
-
     
-    # NEEDS REWRITING. Esta dos veces la func para tenerla afuera de la clase.
+# This should go into the QueryEngine Class
 def generate_metadata_from_key(key: str) -> dict:
     """
     Extracts metadata from a given key string. The metadata includes 'documento',
@@ -531,6 +401,12 @@ def generate_metadata_from_key(key: str) -> dict:
         
     return metadata
 
+
+
+
+
+
+# This should go into the QueryEngine Class
 @timeit
 def get_stored_citations(top_k_docs, legal_metadata):
 # Initialize citations as an empty dict
@@ -544,6 +420,148 @@ def get_stored_citations(top_k_docs, legal_metadata):
                 # Update the score for the flattened entry
                 citations[sub_key]['score'] = top_k_docs[key]
     return citations
+
+
+
+class PipelineTester:
+    @staticmethod
+    # Check that encoding/decoding of vectorstore's ndarrays is lossless
+    def verify_data_integrity(original_data: Dict[str, np.ndarray]) -> None:
+        """
+        Tests the integrity of data through encoding to JSON and decoding back to a dictionary.
+
+        This function encodes a dictionary (where values are numpy ndarrays) into a JSON string,
+        then decodes this JSON string back into a dictionary. It checks that the keys match between
+        the original and decoded dictionaries and that the values (ndarrays) are equal in type and content.
+
+        Args:
+            original_data: A dictionary with string keys and numpy ndarray values.
+
+        Raises:
+            AssertionError: If the keys do not match between the original and decoded dictionaries,
+                            or if the ndarray values are not equal in type and content.
+        """
+        # Encode to JSON string
+        encoded_data = json.dumps(original_data, cls=NdarrayEncoder)
+
+        # Decode back to dictionary
+        ndarray_decoder = NdarrayDecoder()
+        decoded_data = json.loads(encoded_data, object_hook=ndarray_decoder)
+
+        # Check if keys match
+        assert set(original_data.keys()) == set(
+            decoded_data.keys()
+        ), "Keys do not match."
+        # Check if values match in type and content
+        for key in original_data:
+            assert isinstance(
+                decoded_data[key], np.ndarray
+            ), f"Value for {key} is not an ndarray."
+            np.testing.assert_array_equal(
+                original_data[key],
+                decoded_data[key],
+                err_msg=f"Arrays for {key} do not match.",
+            )
+
+        print("Test passed: No modification in data during encoding and decoding.")
+
+    @staticmethod
+    def plot_vectors(vectors: Dict[str, Any]) -> None:
+        """
+        Creates a t-SNE plot of vectors with Plotly. The function separates vectors into two categories based on their keys:
+        those that start with 'query:' and those that do not. The two categories are plotted separately. Vectors whose keys
+        start with 'query:' are plotted with a black star marker, while the rest are plotted with a point marker.
+
+        Args:
+            vectors: A dictionary where each key is a string and each value is a vector. The keys that start with 'query:'
+            are considered as query vectors and are plotted differently from the rest.
+
+        Returns:
+            None. The function displays a plot.
+
+        """
+
+        # Get the list of vectors and keys
+        vectors_list = list(vectors.values())
+        keys_list = list(vectors.keys())
+
+        # Convert the list of vectors to a numpy array
+        vectors_array = np.array(vectors_list)
+
+        # Create a t-SNE object
+        tsne = TSNE(n_components=2, random_state=0)
+
+        # Perform t-SNE
+        vectors_2d = tsne.fit_transform(vectors_array)
+
+        # Separate 2D coordinates for queries and non-queries
+        query_vectors_2d = np.array(
+            [vec for key, vec in zip(keys_list, vectors_2d) if key.startswith("query:")]
+        )
+        non_query_vectors_2d = np.array(
+            [
+                vec
+                for key, vec in zip(keys_list, vectors_2d)
+                if not key.startswith("query:")
+            ]
+        )
+        query_keys = [key for key in keys_list if key.startswith("query:")]
+        non_query_keys = [key for key in keys_list if not key.startswith("query:")]
+
+        # Create the plot for non-query vectors
+        fig = go.Figure(
+            data=go.Scatter(
+                x=non_query_vectors_2d[:, 0],
+                y=non_query_vectors_2d[:, 1],
+                mode="markers",
+                text=non_query_keys,  # This line sets the hover text
+                marker=dict(
+                    size=8,
+                    color=non_query_vectors_2d[:, 0],  # Set color equal to x
+                    colorscale="Viridis",  # One of plotly colorscales
+                    showscale=False,
+                ),
+            )
+        )
+
+        # Add the plot for query vectors, if there are any
+        if len(query_vectors_2d) > 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=query_vectors_2d[:, 0],
+                    y=query_vectors_2d[:, 1],
+                    mode="markers",
+                    text=query_keys,  # This line sets the hover text
+                    marker=dict(
+                        size=8,
+                        color="black",  # Set color to black
+                        symbol="star",  # Set marker symbol to star
+                    ),
+                )
+            )
+
+        # Set the title and labels
+        fig.update_layout(
+            title=f"t-SNE plot of vectors",
+            xaxis=dict(title="Dimension 1"),
+            yaxis=dict(title="Dimension 2"),
+        )
+
+        # Show the plot
+        fig.show()
+
+        fig.write_html("t-SNE_plot.html", auto_open=True)
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     """   
@@ -671,8 +689,6 @@ if __name__ == "__main__":
     citations = get_stored_citations(top_k_docs, dnu_metadata)
     print(citations)
 
-    head_dict(citations, 2)
-    head_dict(dnu_metadata, 2)
 
 
 

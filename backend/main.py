@@ -27,18 +27,20 @@ if __name__ == "__main__":
 
     logging_dir = "./logs/"
     bot_name = "ALI"
-    session_name = "ALI"
+    session_name = "ALI-rag"
+    file_path_vectorstore = "./data/dnu_vectorstore.json"
 
-    logging_filepath = logger.create_log_file(bot_name, config, os.path.join(logging_dir, session_name))
+    logging_filepath = logger.create_log_file(bot_name, os.path.join(logging_dir, session_name))
 
     try:
         # Take user query:
-        user_query = input("Pregunta sobre el DNU impulsado por el presidente Javier Milei: ")
+        user_query = input("Pregunta sobre la legislación Argentina:")
 
         file_path_vectorstore = "./data/dnu_vectorstore.json"
 
         data_loader = DataLoader()
         dnu = data_loader.load_json("./data/ALI/decreto_flat.json")
+        dnu_metadata = data_loader.load_json("./data/dnu_metadata.json")
 
         embedder = Embedder("dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn")
 
@@ -51,7 +53,7 @@ if __name__ == "__main__":
         query_vector = embedder.embed_text(user_query)
 
         # Initialize the QueryEngine with necessary parameters
-        query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, top_k=5)
+        query_engine = QueryEngine(vectorstore, embedder, legal_docs=dnu, legal_metadata=dnu_metadata, top_k=5)
 
         # Use the query_similarity method to find documents similar to the query
         top_k_docs, matching_docs = query_engine.query_similarity(
@@ -70,7 +72,7 @@ if __name__ == "__main__":
             matching_docs=matching_docs,
         )
 
-        citations = query_engine.generate_complete_citations_dict(matching_docs, top_k_docs)
+        citations = get_stored_citations(top_k_docs, dnu_metadata)
 
         # Print:
         print(text)
