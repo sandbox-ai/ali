@@ -1,3 +1,14 @@
+
+__author__ = "SandboxAI Team"
+__copyright__ = "Copyright 2023, Team Research"
+__credits__ = ["SandboxAI"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "SanboxAI Team"
+__email__ = "sandboxai <dot> org <at> proton <dot> me"
+__status__ = "Development"
+
+
 import os
 import json
 from typing import Dict, Any, Union, Tuple, Optional, List
