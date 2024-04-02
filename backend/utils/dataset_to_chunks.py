@@ -235,8 +235,8 @@ if __name__ == "__main__":
     chunks = []
 
     # Define paths:
-    source_txt_path = './data/LaLeyDeMilei-raw/decreto.json'
-    target_chunks_path = 'data/LaLeyDeMilei/decreto_chunks.json'
+    source_txt_path = './data/ALI-raw/decreto.json'
+    target_chunks_path = 'data/ALI/decreto_chunks.json'
 
     # Define chunking parameters:
     max_chunk_size = 680

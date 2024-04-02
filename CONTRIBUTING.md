@@ -1,7 +1,7 @@
 ## Main Branch
 Prod branch is `main` and should be treated as such.
-Dev branch is `LaLeyDeMilei_dev`. Every feature bust be a separate branch, originating from `LaLeyDeMilei_dev`.
-Once a feature is ready, it can be merged to `LaLeyDeMilei_dev`, and if all is ok, then it will be merged to `main`.
+Dev branch is `dev`. Every feature bust be a separate branch, originating from `dev`.
+Once a feature is ready, it can be merged to `dev`, and if all is ok, then it will be merged to `main`.
 
 ## Branch names
 - *WIP/featurename*   - For Work In Progress, stuff that will not end soon 
