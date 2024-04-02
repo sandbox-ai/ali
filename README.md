@@ -132,7 +132,7 @@ For testing purposes, we include in the current repo a processed version of the 
 
 In order to create a vector database of the whole Argentinian law, we can look into the Boletín Oficial, where everything about legislation is published.
 
-We have built [a tool to scrap](https://github.com/sandbox-ai/Boletin-Oficial-Argentina) the Boletín Oficial into a dataset dataset. You can also find the result uploaded and up-to-date on [Huggingface](https://huggingface.co/datasets/marianbasti/boletin-oficial-argentina).
+We have built [a tool to scrap](https://github.com/sandbox-ai/Boletin-Oficial-Argentina) the whole Boletín Oficial into a dataset. You can also find the result uploaded and up-to-date on [Huggingface](https://huggingface.co/datasets/marianbasti/boletin-oficial-argentina).
 
 This raw dataset must be parsed into the format described earlier (prepending contextual metadata). Given the inconsistent and unpredictable formatting of the documents and texts, there is no simple programmatic parsing to automate the process. We found that various NLP techniques are useful in automating this task (prompting LLMs, sentence-transformers, NER). 
 
