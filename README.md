@@ -75,7 +75,7 @@ Also see `backend/README.md` and `frontend/README.md`
 
 The complexity of legal documents and legalese terminology presents a barrier to most of the population, who wont't able to interact and understand their own legal system unless aided by a professional in the field.
 
-To help close this gap in the Spnish speaking world, we built the Asistente Legal Inteligente (or ALI). It uses Retrieval Augmented Generation ([RAG](https://arxiv.org/abs/2005.11401)), i.e. searching a vectorstore given an user query and formulating an answer with a Large Language Model (LLM), and a custom dataset that lays a RAG optimized structure. 
+To help close this gap in the Spanish speaking world, we built the Asistente Legal Inteligente (or ALI). It uses Retrieval Augmented Generation ([RAG](https://arxiv.org/abs/2005.11401)), i.e. searching a vectorstore given an user query and formulating an answer with a Large Language Model (LLM), and a custom dataset that lays a RAG optimized structure. 
 
 The result is a grounded and comprehensive assistant that can answer questions about general legislation and specific legal situations.
 
