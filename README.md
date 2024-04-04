@@ -17,7 +17,7 @@
 </p>
 
 This repo contains the code and instructions to set up ALI, a web UI and back-end pipeline for Retrieval Augmented Generation around legal documents.
-You can try ALI at [https://chat.omnibus.com.ar/](https://chat.omnibus.com.ar/) .
+You can try ALI at [here](https://ali.sandboxai.ar/) .
 
 ## Table of Contents
 - [Installation](#installation)
@@ -37,7 +37,7 @@ You can try ALI at [https://chat.omnibus.com.ar/](https://chat.omnibus.com.ar/) 
 
 ### Installation
 
-Clone repo, create new environment, install backend and frontend requirements
+Clone the repo, create a new environment and install backend and frontend requirements:
 ```bash
 git clone https://github.com/sandbox-ai/ali.git
 cd ali
@@ -51,7 +51,7 @@ npm install
 
 **Usage**
 
-Launch the backend in one terminal
+Launch the backend in one terminal:
 ```bash
 conda activate ali
 export OPENAI_API_KEY=<your-key-here>
@@ -67,7 +67,7 @@ cd frontend
 ng serve
 ```
 
-Also see `backend/README.md` and `frontend/README.md`    
+Also see [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md)    
 
 
 ## Description
@@ -84,7 +84,7 @@ The result is a grounded and comprehensive assistant that can answer questions a
 The user query is embedded using a custom Spanish [embedding model](https://huggingface.co/dariolopez/roberta-base-bne-finetuned-msmarco-qa-es-mnrl-mn), and then used to search for the best matching legal documents with cosine-similarity. To formulate the answer, an LLM hosted with an [OpenAI compatible API endpoint](https://platform.openai.com/docs/api-reference) is queried with a custom prompt and the relevant documents. 
 
 This technique has ample room for improvements. See our roadmap on [RAG improvements](#improvements-over-baseline-rag). 
-You can check out the RAG system written from scratch in `src/rag_session.py`   
+You can check out the RAG system written from scratch in [`src/rag_session.py`](src/rag_session.py)   
 
 #### On LLM frameworks
 We've tested both [llama_index](https://github.com/run-llama/llama_index) and [langchain](https://github.com/langchain-ai/langchain), but found them too restrictive and in the end more cumbersome than developing our own pipeline over [transformers](https://huggingface.co/docs/transformers/en/index), enabling finer control and suprevision. 
@@ -148,7 +148,7 @@ Definetly go check their project and talk to the creators!
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request :D
 
-Please refer to CONTRIBUTING.md for a detailed explanation of branch/commit naming conventions
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for a detailed explanation of branch/commit naming conventions
 
 ## Who we are
 We are a group of Argentinian developers named [`sandbox.ai`](https://sandbox-ai.github.io/).
