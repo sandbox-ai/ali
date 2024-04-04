@@ -17,7 +17,7 @@
 </p>
 
 This repo contains the code and instructions to set up ALI, a web UI and back-end pipeline for Retrieval Augmented Generation around legal documents.
-You can try ALI at [here](https://ali.sandboxai.ar/) .
+You can try ALI [here](https://ali.sandboxai.ar/) .
 
 ## Table of Contents
 - [Installation](#installation)
