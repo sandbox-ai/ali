@@ -16,3 +16,5 @@ EXPOSE 5000
 # default command
 CMD ["python", "api.py", "-i", "0.0.0.0"]
 # CMD ["tail", "-f", "/dev/null"]
+
+#trigger
