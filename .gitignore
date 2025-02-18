@@ -2,6 +2,9 @@
 
 **/.env
 
+
+backend/.venv
+backend/.env
 # Compiled output
 frontend/dist
 frontend/tmp

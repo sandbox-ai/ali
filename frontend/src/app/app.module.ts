@@ -20,10 +20,13 @@ import { HttpClientModule } from '@angular/common/http';
 
 import {NgxTypedJsModule} from 'ngx-typed-js';
 
+import { TextStreamComponent } from './components/text-stream/text-stream.component';
+
 @NgModule({
   declarations: [
     TermDialogComponent,
-    AppComponent
+    AppComponent,
+    TextStreamComponent
   ],
   imports: [
     BrowserModule,
