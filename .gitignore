@@ -2,6 +2,7 @@
 
 **/.env
 
+.venv
 
 backend/.venv
 backend/.env
