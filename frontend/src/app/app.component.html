@@ -64,11 +64,10 @@
 
         <nb-card *ngIf="!loading">
           <nb-card-body>
-            <div style="width: min(970px, 90%); margin: 0 auto;">
-              <ngx-typed-js [strings]="response" (completed)="handleComplete()" [showCursor]="false" [typeSpeed]="0">
-                <p class="typing"></p>
-              </ngx-typed-js>
-            </div>
+            <app-text-stream 
+              [text]="response[0]"
+              (completed)="handleComplete()">
+            </app-text-stream>
           </nb-card-body>
           <nb-card-footer *ngIf="refer">
             <h3 id="referencias-text">Referencias</h3>
