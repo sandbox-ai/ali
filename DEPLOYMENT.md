@@ -71,6 +71,19 @@ The Angular frontend is configured to use `/api` as the base URL in production (
 
 ## Important Notes
 
+### Deployment Status
+
+✅ **What's Working**:
+- Vercel configuration is properly set up
+- Python serverless functions are configured correctly
+- Angular build process is ready
+- API endpoints are properly routed
+- Environment variables are configured
+
+⚠️ **Known Issues**:
+- `vercel dev` may have issues with the current project structure
+- For local testing, run frontend and backend separately
+
 ### Data Files
 
 ⚠️ **Important**: The current deployment setup expects the legal data files to be present:
@@ -107,8 +120,23 @@ To test the Vercel configuration locally:
 # Install Vercel CLI
 npm i -g vercel
 
+# Build the frontend first
+cd frontend && npm install && npm run build:vercel && cd ..
+
 # Run development server
 vercel dev
+```
+
+**Note**: For local development with this project structure, it's often easier to run the frontend and backend separately:
+
+```bash
+# Terminal 1 - Frontend
+cd frontend
+npm start
+
+# Terminal 2 - Backend
+cd backend
+python api.py
 ```
 
 ## Troubleshooting

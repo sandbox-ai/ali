@@ -65,3 +65,4 @@ dump.rdb
 
 # Backend logs
 backend/logs/
+.vercel

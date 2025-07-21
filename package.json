@@ -1,0 +1,11 @@
+{
+    "name": "ali-vercel",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "cd frontend && npm install && npm run build:vercel",
+        "dev": "cd frontend && npm start"
+    },
+    "devDependencies": {
+        "@angular/cli": "~14.2.13"
+    }
+}

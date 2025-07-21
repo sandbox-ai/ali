@@ -1,19 +1,14 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json",
     "version": 2,
-    "builds": [{
-            "src": "frontend/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist/qafront",
-                "buildCommand": "cd frontend && npm install && npm run build:vercel"
-            }
-        },
-        {
-            "src": "api/index.py",
-            "use": "@vercel/python"
+    "buildCommand": "cd frontend && npm install && npm run build:vercel",
+    "devCommand": "cd frontend && npm start",
+    "installCommand": "cd frontend && npm install",
+    "outputDirectory": "frontend/dist/qafront",
+    "functions": {
+        "api/index.py": {
+            "maxDuration": 60
         }
-    ],
+    },
     "routes": [{
             "src": "/api/(.*)",
             "dest": "/api/index.py"
@@ -22,10 +17,5 @@
             "src": "/(.*)",
             "dest": "/frontend/dist/qafront/$1"
         }
-    ],
-    "functions": {
-        "api/index.py": {
-            "maxDuration": 60
-        }
-    }
+    ]
 }
